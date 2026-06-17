@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   ShoppingBag,
 } from 'lucide-react'
+import asset from '../utils/asset.js'
 import useTypewriter from '../hooks/useTypewriter.js'
 import useScrollReveal from '../hooks/useScrollReveal.js'
 import usePageMeta from '../hooks/usePageMeta.js'
@@ -81,7 +82,7 @@ export default function Home() {
             <div className="relative z-10 flex justify-center">
               <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
                 <img
-                  src="/main-image.png"
+                  src={asset('/main-image.png')}
                   alt="Parveen Kumar - Web Developer & Meta Ads Manager"
                   className="w-full h-auto object-cover drop-shadow-2xl hover:scale-105 transition-transform duration-500 rounded-lg sm:rounded-2xl"
                 />
@@ -207,7 +208,7 @@ export default function Home() {
                   <div className="flex gap-3">
                     {s.logos.map((logo) => (
                       <div key={logo.label} className="icon-container">
-                        <img src={logo.src} alt={logo.label} title={logo.label} loading="lazy" />
+                        <img src={asset(logo.src)} alt={logo.label} title={logo.label} loading="lazy" />
                       </div>
                     ))}
                   </div>
@@ -269,8 +270,8 @@ export default function Home() {
                   </div>
                   <div className="flex-1 overflow-hidden bg-white">
                     <picture>
-                      <source media="(max-width: 768px)" srcSet={p.mobile} />
-                      <img src={p.desktop} alt={`${p.title} Website`} className="w-full h-full object-cover" loading="lazy" />
+                      <source media="(max-width: 768px)" srcSet={asset(p.mobile)} />
+                      <img src={asset(p.desktop)} alt={`${p.title} Website`} className="w-full h-full object-cover" loading="lazy" />
                     </picture>
                   </div>
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

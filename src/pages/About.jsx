@@ -1,3 +1,4 @@
+import asset from '../utils/asset.js'
 import useScrollReveal from '../hooks/useScrollReveal.js'
 import usePageMeta from '../hooks/usePageMeta.js'
 import {
@@ -256,7 +257,7 @@ export default function About() {
                     <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">{c.poweredLabel}</p>
                     <div className="flex gap-3 items-center">
                       {c.logos.map((logo) => (
-                        <img key={logo.label} src={logo.src} alt={logo.label} title={logo.label} className="h-8 w-8 rounded-lg object-contain bg-gray-800/60 border border-gray-700 p-1" />
+                        <img key={logo.label} src={asset(logo.src)} alt={logo.label} title={logo.label} className="h-8 w-8 rounded-lg object-contain bg-gray-800/60 border border-gray-700 p-1" />
                       ))}
                     </div>
                   </div>
