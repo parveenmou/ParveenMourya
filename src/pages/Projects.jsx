@@ -151,13 +151,15 @@ export default function Projects() {
           </div>
 
           <div className="relative">
-            <div className="absolute left-1/2 top-0 -translate-x-1/2 hidden md:block w-[3px] h-full bg-gradient-to-b from-yellow-300 via-cyan-300 to-emerald-300"></div>
+            {/* Vertical rail — left edge on mobile, centered on desktop */}
+            <div className="absolute top-0 h-full w-[3px] bg-gradient-to-b from-yellow-300 via-cyan-300 to-emerald-300 left-[7px] md:left-1/2 md:-translate-x-1/2"></div>
             <div className="space-y-10">
               {TIMELINE.map((item, i) => {
                 const left = i % 2 === 1
                 return (
-                  <div key={item.title} className="relative md:flex md:items-stretch md:gap-8">
-                    <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 h-full">
+                  <div key={item.title} className="relative pl-10 md:pl-0 md:flex md:items-stretch md:gap-8">
+                    {/* Node dot — sits on the rail (left on mobile, centered on desktop) */}
+                    <div className="absolute top-2 left-0 md:top-0 md:left-1/2 md:-translate-x-1/2 md:flex md:h-full">
                       <div className={`w-4 h-4 self-start rounded-full border border-white/40 ${TL[item.color].dot}`}></div>
                     </div>
                     {left ? (
