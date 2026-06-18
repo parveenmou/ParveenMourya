@@ -1,0 +1,3478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Confidence Clothing</title>
+<style>
+:root {
+  --green:#008060; --green-dark:#004c3f; --green-light:#e3f5ef;
+  --red:#e53e3e; --orange:#dd6b20; --blue:#3182ce; --purple:#805ad5; --teal:#2c7a7b;
+  --gray:#6d7175; --gray-light:#f4f5f7; --border:#e1e3e5;
+  --sidebar-w:248px; --content-max:1440px;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{background:var(--gray-light);color:#202223;min-height:100vh;font-size:14px}
+
+/* ── LOGIN ── */
+#login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--green-dark)}
+.login-card{background:white;border-radius:14px;padding:40px 36px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo h1{font-size:20px;color:var(--green-dark);margin-top:8px}
+.login-logo p{font-size:12px;color:var(--gray);margin-top:2px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:#444;margin-bottom:5px}
+.form-group input{width:100%;border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:14px;outline:none;transition:border .15s}
+.form-group input:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(0,128,96,.12)}
+.btn-login{width:100%;background:var(--green);color:white;border:none;border-radius:7px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px;transition:background .15s}
+.btn-login:hover{background:#006b4f}
+.login-error{color:var(--red);font-size:13px;text-align:center;margin-top:10px;display:none}
+
+/* ── APP ── */
+#app{display:none;min-height:100vh}
+.layout{display:flex;min-height:100vh}
+
+/* sidebar */
+.sidebar{width:var(--sidebar-w);background:var(--green-dark);color:white;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0}
+.sidebar-brand{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.12)}
+.sidebar-brand h2{font-size:16px;font-weight:700;line-height:1.3}
+.sidebar-brand p{font-size:11px;opacity:.6;margin-top:2px}
+.nav{flex:1;padding:12px 0}
+.nav-item{display:flex;align-items:center;gap:11px;padding:13px 20px;font-size:14px;font-weight:500;cursor:pointer;border-left:3px solid transparent;transition:all .15s;color:rgba(255,255,255,.75)}
+.nav-item:hover{background:rgba(255,255,255,.08);color:white}
+.nav-item.active{background:rgba(255,255,255,.12);color:white;border-left-color:var(--green)}
+.nav-icon{width:19px;height:19px;flex-shrink:0}
+.sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.12)}
+.btn-logout{width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;border-radius:6px;padding:8px;font-size:13px;cursor:pointer;transition:background .15s}
+.btn-logout:hover{background:rgba(255,255,255,.2)}
+
+/* main */
+.main{margin-left:var(--sidebar-w);flex:1;min-width:0}
+.topbar{background:white;border-bottom:1px solid var(--border);padding:18px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar h1{font-size:20px;font-weight:700}
+.topbar-right{font-size:13px;color:var(--gray)}
+.content{padding:30px 40px}
+
+/* stats */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px;margin-bottom:28px}
+.stat-card{background:white;border-radius:12px;padding:22px 24px;box-shadow:0 1px 4px rgba(0,0,0,.07);transition:box-shadow .15s,transform .15s}
+.stat-card:hover{box-shadow:0 6px 18px rgba(0,0,0,.09);transform:translateY(-2px)}
+.stat-label{font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.stat-value{font-size:32px;font-weight:800;color:#202223;line-height:1.1}
+.stat-sub{font-size:12px;color:var(--gray);margin-top:6px}
+.stat-card.highlight .stat-value{color:var(--green)}
+
+/* tables */
+.card{background:white;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden;margin-bottom:24px}
+.card-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.card-header h3{font-size:16px;font-weight:700}
+.session-pill{display:inline-flex;align-items:center;gap:9px;background:var(--green-light);border:1.5px solid var(--green);border-radius:10px;padding:6px 14px;white-space:nowrap}
+.session-pill .sp-label{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--green-dark);opacity:.8}
+.session-pill .sp-season{font-size:19px;font-weight:800;line-height:1;color:var(--green-dark)}
+.search-box{border:1px solid var(--border);border-radius:6px;padding:9px 13px;font-size:14px;outline:none;width:280px;max-width:100%;transition:border .15s}
+.search-box:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(0,128,96,.12)}
+/* Shopify-style product search & filter bar */
+.pf-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border);background:#fafbfb}
+.pf-tabs{display:inline-flex;background:var(--gray-light);border-radius:8px;padding:3px}
+.pf-tab{border:none;background:transparent;padding:6px 14px;font-size:13px;font-weight:600;color:var(--gray);border-radius:6px;cursor:pointer;transition:all .12s}
+.pf-tab.active{background:#fff;color:#202223;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.pf-search{position:relative;flex:1;min-width:220px}
+.pf-search input{width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px 9px 34px;font-size:14px;outline:none;transition:border .15s;background:#fff}
+.pf-search input:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(0,128,96,.12)}
+.pf-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--gray);pointer-events:none}
+.pf-select{border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;background:#fff;color:#444;outline:none;cursor:pointer;max-width:160px}
+.pf-select:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(0,128,96,.12)}
+.pf-clear{border:none;background:transparent;color:var(--green-dark);font-size:13px;font-weight:600;cursor:pointer;padding:6px 8px}
+.pf-count{font-size:12px;color:var(--gray);white-space:nowrap}
+/* topbar action buttons (moved from the products card header) */
+.topbar-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+/* Shopify-style "Add filter" popover + applied-filter chips */
+.pf-addwrap{position:relative;display:inline-block}
+.pf-add-btn{border:1px dashed #c4cbd2;background:#fff;color:var(--green-dark);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;white-space:nowrap}
+.pf-add-btn:hover{border-color:var(--green);background:var(--green-light)}
+.pf-pop{display:none;position:absolute;left:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.16);min-width:250px;max-width:300px;z-index:60;padding:6px}
+.pf-pop.open{display:block}
+.pf-pop-head{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;padding:6px 10px 4px}
+.pf-pop-item{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border:none;background:none;text-align:left;padding:8px 10px;border-radius:7px;font-size:13px;color:#333;cursor:pointer;font-family:inherit}
+.pf-pop-item:hover{background:var(--green-light)}
+.pf-pop-arrow{color:var(--gray)}
+.pf-pop-back{border:none;background:none;color:var(--green-dark);font-weight:600;font-size:13px;cursor:pointer;padding:6px 10px;display:block;text-align:left}
+.pf-pop-ops{display:flex;gap:6px;padding:4px 10px 6px}
+.pf-op{flex:1;border:1px solid var(--border);background:#fff;border-radius:7px;padding:5px;font-size:12px;font-weight:600;color:var(--gray);cursor:pointer;font-family:inherit}
+.pf-op.active{background:var(--green);border-color:var(--green);color:#fff}
+.pf-pop-search{width:calc(100% - 20px);margin:2px 10px 6px;border:1px solid var(--border);border-radius:7px;padding:6px 9px;font-size:13px;outline:none;font-family:inherit}
+.pf-pop-search:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(0,128,96,.12)}
+.pf-pop-values{max-height:220px;overflow:auto}
+.pf-pop-empty{padding:10px;color:var(--gray);font-size:13px;text-align:center}
+.pf-chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px 0}
+.pf-chips:empty{display:none}
+.pf-chip{display:inline-flex;align-items:center;gap:7px;background:var(--green-light);border:1px solid #bfe3d6;color:var(--green-dark);border-radius:999px;padding:5px 7px 5px 13px;font-size:12.5px;font-weight:700}
+.pf-chip-k{color:#5a6b66;font-weight:600}
+.pf-chip-x{border:none;background:rgba(0,0,0,.07);color:var(--green-dark);width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:11px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.pf-chip-x:hover{background:rgba(0,0,0,.15)}
+/* click-to-sort column headers (Excel-style) */
+.th-sort{cursor:pointer;user-select:none;white-space:nowrap}
+.th-sort:hover{color:#202223}
+.th-sort .sort-ind{font-size:9px;margin-left:4px;display:inline-block}
+.th-sort .sort-ind.dim{opacity:.28}
+.th-sort.sorted{color:var(--green-dark)}
+.pf-clear:hover{text-decoration:underline}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;padding:12px 20px;border-bottom:1px solid var(--border);white-space:nowrap;background:#fafbfc}
+td{padding:14px 20px;font-size:14px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbfc}
+
+/* badges */
+.badge{display:inline-block;border-radius:12px;padding:2px 9px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-green{background:#e3f5ef;color:#006b4f}
+.badge-gray{background:#f1f2f4;color:var(--gray)}
+/* per-collection Active/Draft toggle */
+.coll-active-cell{white-space:nowrap}
+.coll-active-cell .ca-state{font-size:11px;font-weight:700;vertical-align:middle;margin-left:9px}
+.coll-active-cell .ca-state.on{color:#006b4f}
+.coll-active-cell .ca-state.off{color:var(--gray)}
+tr.coll-draft td:not(.coll-active-cell){opacity:.5}
+/* admin-only view filter — an icon in the heading reveals the control inline (same row) */
+.th-filter-inline{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.th-cap{font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.th-ficon{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--gray);cursor:pointer;padding:0;transition:all .12s;flex-shrink:0}
+.th-ficon:hover{border-color:var(--green);color:var(--green)}
+.th-ficon.active{background:var(--green-light);border-color:var(--green);color:var(--green-dark)}
+.th-ficon svg{width:13px;height:13px}
+.th-inline-input,.th-inline-select{border:1px solid var(--green);border-radius:7px;padding:5px 10px;font-size:12.5px;font-weight:400;color:#333;text-transform:none;letter-spacing:normal;background:#fff;outline:none}
+.th-inline-input{width:180px}
+.th-inline-input:focus{box-shadow:0 0 0 2px rgba(0,128,96,.12)}
+.th-inline-input::placeholder{color:#9aa0a6}
+.th-inline-select{cursor:pointer;max-width:200px}
+.badge-blue{background:#ebf4ff;color:#2b6cb0}
+.badge-teal{background:#e6fffa;color:var(--teal)}
+.badge-orange{background:#fffaf0;color:var(--orange)}
+.badge-purple{background:#faf5ff;color:var(--purple)}
+.badge-red{background:#fff5f5;color:var(--red)}
+
+/* toggle switch */
+.toggle{position:relative;display:inline-block;width:40px;height:22px}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#ccc;border-radius:22px;cursor:pointer;transition:.2s}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:white;border-radius:50%;transition:.2s}
+.toggle input:checked+.toggle-slider{background:var(--green)}
+.toggle input:checked+.toggle-slider:before{transform:translateX(18px)}
+
+/* buttons */
+.btn{border:none;border-radius:7px;padding:9px 16px;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-primary{background:var(--green);color:white}.btn-primary:hover{background:#006b4f}
+.btn-secondary{background:var(--gray-light);color:#202223;border:1px solid var(--border)}.btn-secondary:hover{background:var(--border)}
+.btn-danger{background:#fff5f5;color:var(--red);border:1px solid #fed7d7}.btn-danger:hover{background:#fed7d7}
+.btn-warning{background:#fffaf0;color:var(--orange);border:1px solid #fbd38d}
+
+/* filter buttons */
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:white;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;color:var(--gray)}
+.filter-btn.active{background:var(--green);color:white;border-color:var(--green)}
+
+/* modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto}
+.modal-bg.open{display:flex}
+/* bulk import modal */
+.bi-drop{border:2px dashed var(--border);border-radius:10px;padding:28px 16px;text-align:center;cursor:pointer;transition:.15s;background:#fafbfc}
+.bi-drop:hover,.bi-drop.over{border-color:var(--green);background:var(--green-light)}
+.bi-drop-icon{font-size:30px;margin-bottom:6px;line-height:1}
+.bi-drop p{margin:0}
+.bi-hint{font-size:11px;color:var(--gray);margin-top:5px}
+.bi-status{margin-top:12px;font-size:13px;display:none;padding:9px 12px;border-radius:6px;line-height:1.4}
+.bi-status.ok{display:block;background:#e3f5ef;color:#006b4f}
+.bi-status.err{display:block;background:#fff5f5;color:var(--red)}
+.bi-status.busy{display:block;background:var(--gray-light);color:#202223}
+.bi-tmpl{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding:12px 14px;border:1px solid var(--border);border-radius:8px;background:#fff}
+.bi-cols{margin-top:12px;font-size:12px}
+.bi-cols summary{cursor:pointer;font-weight:600;color:var(--green-dark)}
+.bi-cols>div{margin-top:8px;line-height:1.7;color:#444}
+/* products: clickable title + top-right actions menu */
+.prod-title-link{color:var(--green-dark);font-weight:600;cursor:pointer}
+.prod-title-link:hover{color:var(--green);text-decoration:underline}
+.prod-thumb{width:34px;height:42px;object-fit:cover;border-radius:5px;background:#f4f5f7;border:1px solid var(--border);display:block}
+.prod-thumb-ph{display:inline-block;width:34px;height:42px;border-radius:5px;background:#f4f5f7;border:1px solid var(--border)}
+.menu-wrap{position:relative;display:inline-block}
+.icon-btn{font-size:15px;line-height:1;padding:7px 12px}
+.action-menu{display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.16);min-width:204px;z-index:60;padding:6px}
+.action-menu.open{display:block}
+.action-menu-item{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;padding:9px 11px;font-size:13px;font-family:inherit;color:#202223;cursor:pointer;border-radius:6px}
+.action-menu-item:hover{background:var(--gray-light)}
+.action-menu-sep{height:1px;background:var(--border);margin:6px 4px}
+.action-menu-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gray);padding:6px 11px 2px}
+.action-menu-sep{height:1px;background:var(--border);margin:6px 6px}
+/* tag picker modal (Shopify-style add/remove tags) */
+.tag-search{position:relative;margin-bottom:8px}
+.tag-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray);pointer-events:none}
+.tag-search input{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px 10px 36px;font-size:14px;outline:none;font-family:inherit}
+.tag-search input:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(0,128,96,.12)}
+.tag-list{max-height:340px;overflow:auto;display:flex;flex-direction:column;gap:2px}
+.tag-list-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gray);padding:10px 6px 4px}
+.tag-row{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:14px}
+.tag-row:hover{background:var(--gray-light)}
+.tag-row input{width:17px;height:17px;cursor:pointer;flex-shrink:0}
+.tag-create{display:flex;align-items:center;gap:7px;width:100%;text-align:left;border:none;background:var(--green-light);color:var(--green-dark);border-radius:7px;padding:10px;font-size:14px;cursor:pointer;font-family:inherit;margin:4px 0}
+.tag-create:hover{background:#d3eee4}
+.tag-empty{padding:16px 6px;color:var(--gray);font-size:13px;text-align:center}
+/* clickable table rows + collection detail */
+.row-click{cursor:pointer}
+.row-click:hover{background:var(--green-light)}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.seg-btn{background:#fff;border:none;padding:7px 15px;font-size:13px;font-weight:600;color:var(--gray);cursor:pointer;font-family:inherit}
+.seg-btn+.seg-btn{border-left:1px solid var(--border)}
+.seg-btn.active{background:var(--green);color:#fff}
+.sel-bar{display:none;align-items:center;gap:8px;background:var(--green-light);border:1px solid #bfe3d6;border-radius:8px;padding:3px 4px 3px 12px;font-size:12px;font-weight:700;color:var(--green-dark)}
+/* collection multi-condition rule editor */
+.cond-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.cond-row .cond-field{flex:0 0 180px}
+.cond-row .cond-op{flex:0 0 140px}
+.cond-row .cond-value{flex:1;min-width:120px}
+.cond-row select,.cond-row input{border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none;background:#fff}
+.cond-row select:focus,.cond-row input:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(0,128,96,.12)}
+.cond-del{border:none;background:var(--gray-light);color:var(--gray);border-radius:6px;width:32px;height:34px;cursor:pointer;font-size:13px;flex-shrink:0}
+.cond-del:hover{background:#fde8e8;color:var(--red)}
+.drag-row .drag-handle{cursor:grab;color:var(--gray);text-align:center;font-size:14px;user-select:none}
+.drag-row:hover{background:#fafbfc}
+tr.drag-over-top td{box-shadow:inset 0 2px 0 var(--green)}
+/* PDF print area — one product per 9in×14.6in page, per the catalogue spec:
+   full-width black CONFIDENCE header · item-category tag · bordered 4:5 image box
+   (whole photo, head never cut) with colour-count bar + lycra badge · details at the bottom. */
+#pdf-print-area{display:none}
+.pdf-page{position:relative;width:9in;height:14.6in;box-sizing:border-box;background:#fff;overflow:hidden;
+  display:flex;flex-direction:column;font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#111}
+/* header */
+.pdf-header{flex:0 0 1in;background:#000;display:flex;align-items:center;justify-content:center}
+.pdf-header img{height:0.58in;max-width:90%;object-fit:contain}
+/* body */
+.pdf-bodywrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;padding:0 0.25in 0.25in;position:relative}
+.pdf-cat{position:absolute;top:0.25in;transform:translateY(-50%);right:0.25in;z-index:5;background:#000;color:#fff;border-radius:14px;
+  padding:6px 17px;font-size:9.5pt;font-weight:600;text-transform:uppercase;letter-spacing:.7px;
+  max-width:4in;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 7px rgba(0,0,0,.3)}
+.pdf-image-box{flex:1 1 auto;min-height:0;margin-top:0.5in;border:1px solid #2a2a2a;position:relative;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff}
+/* contain = the whole 4:5 photo always shows (head never cut); fills the ~4:5 box with no bars */
+.pdf-photo{max-width:100%;max-height:100%;object-fit:contain;object-position:center;display:block}
+/* overlays on the image box */
+.pdf-color-bar{position:absolute;left:0.16in;bottom:0.16in;z-index:2;display:flex;align-items:center;gap:7px;
+  background:#000;color:#fff;font-size:8.5pt;font-weight:600;letter-spacing:.4px;
+  padding:5px 12px;border-radius:13px;box-shadow:0 1px 5px rgba(0,0,0,.22)}
+.pdf-color-bar::before{content:"";width:8px;height:8px;border-radius:50%;background:#fff;opacity:.92;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.pdf-lycra{position:absolute;right:0.16in;bottom:0.16in;z-index:2;display:flex;align-items:center;gap:6px;
+  background:#d81f26;color:#fff;font-size:8.5pt;font-weight:700;letter-spacing:1.2px;
+  padding:5px 13px;border-radius:13px;box-shadow:0 1px 5px rgba(0,0,0,.25)}
+/* shade products: image box split 50/50 — the product photo fills the LEFT half at FULL height
+   (cover, sides cropped, head kept via top-anchor); the shade card sits at the TOP of the RIGHT
+   half, fit to its width at natural height (all swatches visible). */
+.pdf-ss{display:flex;width:100%;height:100%;align-items:stretch}
+.pdf-ss-photo{flex:0 0 50%;position:relative;overflow:hidden}
+.pdf-ss-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.pdf-ss-shade{flex:0 0 50%;display:flex;flex-direction:column;padding:8px 10px;overflow:hidden;border-left:1px solid #eee}
+.pdf-ss-label{flex:0 0 auto;font-size:10pt;font-weight:600;color:#333;margin-bottom:7px}
+.pdf-ss-shade img{flex:0 0 auto;width:100%;height:auto;object-fit:contain;display:block}
+/* details */
+.pdf-details{flex:0 0 auto;padding-top:0.14in;text-align:center}
+.pdf-row{font-size:11.5pt;line-height:1.5}
+.pdf-label{font-weight:700}
+.pdf-artno{font-weight:800;color:#0a6b53;letter-spacing:.5px}
+/* border-collapse:SEPARATE (not collapse) so Chrome's print engine never drops the bottom/right
+   edges; the table draws top+left, each cell draws right+bottom → a complete, reliable grid.
+   Cells auto-fit their content (tighter padding, width:auto). */
+.pdf-table{border-collapse:separate;border-spacing:0;width:auto;margin:0.13in auto 0;
+  border-top:1px solid #bbb;border-left:1px solid #bbb}
+.pdf-table th,.pdf-table td{border-right:1px solid #bbb;border-bottom:1px solid #bbb;
+  padding:5px 11px;font-size:10.5pt;text-align:center;white-space:nowrap}
+.pdf-table th{background:#f0f0f0;font-weight:700}
+.pdf-table .pl{font-weight:700;background:#f7f7f7}
+.pdf-table .w{font-weight:700;color:#0a6b53}
+.pdf-table .m{color:#888}
+@media print{
+  body > *:not(#pdf-print-area){display:none !important}
+  #pdf-print-area{display:block !important}
+  .pdf-page{page-break-after:always}
+  .pdf-page:last-child{page-break-after:auto}
+  /* force background colours (black header/tags, red LYCRA badge, table shading) to actually print */
+  .pdf-page, .pdf-page *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+  @page{size:9in 14.6in;margin:0}
+}
+.modal{background:white;border-radius:12px;width:100%;max-width:680px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden}
+.modal-hdr{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between}
+.modal-hdr h2{font-size:16px;font-weight:700}
+.modal-close{background:var(--gray-light);border:none;border-radius:6px;width:30px;height:30px;font-size:16px;cursor:pointer;color:var(--gray);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-close:hover{background:var(--border)}
+.modal-body{padding:20px 22px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+
+/* forms */
+.form-row{display:flex;gap:14px;margin-bottom:14px}
+.fg{display:flex;flex-direction:column;gap:5px;flex:1}
+.fg label{font-size:12px;font-weight:600;color:#444}
+.fg input,.fg select,.fg textarea{border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:14px;outline:none;transition:border .15s;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(0,128,96,.12)}
+.fg textarea{resize:vertical}
+.section-title{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.7px;padding:10px 0 6px;border-bottom:1px solid var(--border);margin-bottom:12px}
+
+/* settings tiles (Shiprocket-style category list) */
+.set-list{display:flex;flex-direction:column;gap:10px}
+.set-tile{display:flex;align-items:center;gap:16px;background:white;border:1px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:all .15s}
+.set-tile:hover{border-color:var(--green);box-shadow:0 2px 12px rgba(0,0,0,.06);transform:translateY(-1px)}
+.set-tile-icon{font-size:22px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:var(--green-light);border-radius:10px;flex-shrink:0}
+.set-tile-body{flex:1;min-width:0}
+.set-tile-title{font-size:15px;font-weight:600;color:#202223}
+.set-tile-desc{font-size:13px;color:var(--gray);margin-top:2px}
+.set-tile-arrow{font-size:22px;color:var(--gray);flex-shrink:0;line-height:1}
+/* collection groups manager (settings) */
+.grp-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+.grp-order{display:flex;flex-direction:column;gap:2px}
+.grp-name{flex:1;min-width:0;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:14px;font-family:inherit;outline:none}
+.grp-name:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(0,128,96,.12)}
+.grp-count{font-size:12px;color:var(--gray);white-space:nowrap}
+.btn-xs{padding:3px 8px;font-size:11px;line-height:1.2}
+.set-detail-hdr{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
+.set-detail-hdr h3{font-size:16px;font-weight:700}
+.set-back{display:inline-flex;align-items:center;gap:5px;background:var(--green-light);color:var(--green-dark);border:none;border-radius:7px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.set-back:hover{background:#cdeee2}
+
+/* session tabs (Products page) */
+.sess-tabs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;position:sticky;top:var(--topbar-h,62px);z-index:40;background:var(--gray-light);padding:10px 0 8px;margin-bottom:6px}
+/* table pagination (100 per page) */
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:13px 20px;border-top:1px solid var(--border)}
+.pager-info{font-size:12px;color:var(--gray)}
+.pager-ctrl{display:flex;align-items:center;gap:12px}
+.pager-page{font-size:13px;color:#202223;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:default;pointer-events:none}
+.sess-tab{display:inline-flex;align-items:center;gap:7px;background:white;border:1px solid var(--border);border-radius:8px 8px 0 0;border-bottom:2px solid var(--border);padding:9px 15px;font-size:13px;font-weight:600;color:var(--gray);cursor:pointer;transition:all .15s}
+.sess-tab:hover{color:#202223;border-color:var(--green)}
+.sess-tab.active{color:var(--green-dark);background:var(--green-light);border-color:var(--green);border-bottom-color:var(--green)}
+.sess-tab-count{font-size:11px;font-weight:700;background:var(--gray-light);color:var(--gray);border-radius:10px;padding:1px 7px}
+.sess-tab.active .sess-tab-count{background:white;color:var(--green-dark)}
+.sess-live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 2px rgba(0,128,96,.2)}
+.sess-tab-add{color:var(--green);border-style:dashed}
+
+/* full-page form / editor header (product form + bulk edit) */
+.form-page-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+
+/* bulk edit grid (Shopify-style spreadsheet with expandable variant rows) */
+.be-wrap{overflow:auto;max-height:calc(100vh - 200px)}
+.be-grid{border-collapse:separate;border-spacing:0;font-size:13px;width:100%;table-layout:auto}
+.be-grid th,.be-grid td{border-bottom:1px solid var(--border);padding:0;white-space:nowrap;overflow:hidden}
+.be-grid th{background:var(--gray-light);font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--gray);font-weight:700;padding:10px 12px;position:sticky;top:0;z-index:3;text-align:left}
+.be-grid th.be-num-h{text-align:right}
+.be-grid .bcol-title{min-width:260px}
+.be-grid .bcol-producttype,.be-grid .bcol-category,.be-grid .bcol-fabric,.be-grid .bcol-fit,.be-grid .bcol-lycra,.be-grid .bcol-color,.be-grid .bcol-tags{min-width:140px}
+.be-grid .bcol-status{min-width:118px}
+.be-grid .bcol-wsp,.be-grid .bcol-mrp{min-width:108px}
+.be-input{width:100%;border:1px solid transparent;border-radius:0;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:transparent}
+.be-input:hover{background:#fafbfc}
+.be-input:focus{border-color:var(--green);background:#fff;box-shadow:inset 0 0 0 1px var(--green)}
+.be-input.changed{background:#fff8e1}
+select.be-input{cursor:pointer}
+.be-num{text-align:right}
+/* product (parent) row */
+.be-prow td{background:#fff}
+.be-title-cell{display:flex;align-items:center;gap:8px;padding-left:8px}
+.be-title-cell .be-input{font-weight:600}
+.be-chev{border:none;background:none;cursor:pointer;color:var(--gray);font-size:13px;padding:2px;flex-shrink:0;transition:transform .15s;line-height:1}
+.be-chev.open{transform:rotate(90deg)}
+.be-thumb{width:26px;height:32px;object-fit:cover;border-radius:4px;background:#f4f5f7;border:1px solid var(--border);flex-shrink:0}
+.be-thumb-ph{width:26px;height:32px;border-radius:4px;background:#f4f5f7;border:1px solid var(--border);flex-shrink:0;display:inline-block}
+/* variant (child) row */
+.be-vrow td{background:#fafbfc}
+.be-vtitle{padding:9px 12px 9px 58px;color:#555;font-size:12px;font-weight:600;position:relative}
+.be-vtitle::before{content:'';position:absolute;left:34px;top:0;bottom:0;border-left:2px solid var(--border)}
+.be-muted{color:#c9cdd2;text-align:center;font-size:13px}
+.be-vinput{width:100%;border:1px solid transparent;border-radius:0;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:transparent;text-align:right}
+.be-vinput:hover{background:#fff}
+.be-vinput:focus{border-color:var(--green);background:#fff;box-shadow:inset 0 0 0 1px var(--green)}
+.be-vinput.changed{background:#fff8e1}
+/* per-column fill-down button in the header */
+.be-fill{border:none;background:rgba(0,128,96,.12);cursor:pointer;color:var(--green-dark);font-size:11px;padding:1px 5px;line-height:1.3;border-radius:4px;margin-left:4px;vertical-align:middle}
+.be-fill:hover{background:var(--green);color:#fff}
+/* columns menu */
+.be-colmenu-wrap{position:relative}
+.be-colmenu{position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:6px;z-index:30;min-width:170px}
+.be-colmenu label{display:flex;align-items:center;gap:8px;padding:7px 9px;font-size:13px;border-radius:6px;cursor:pointer}
+.be-colmenu label:hover{background:var(--gray-light)}
+
+/* session rows (settings manager) */
+.sess-row{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.sess-row.is-live{border-color:var(--green);background:var(--green-light)}
+.sess-row-main{flex:1;min-width:0}
+.sess-row-name{font-size:15px;font-weight:600;color:#202223;display:flex;align-items:center;gap:8px}
+.sess-row-sub{font-size:12px;color:var(--gray);margin-top:2px}
+.sess-row-actions{display:flex;gap:7px;flex-wrap:wrap;flex-shrink:0}
+
+/* size chips (price-band editor) */
+.size-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);border-radius:7px;padding:5px 11px;font-size:13px;font-weight:600;cursor:pointer;user-select:none;transition:all .12s;background:white}
+.size-chip:hover{border-color:var(--green)}
+.size-chip input{accent-color:var(--green);cursor:pointer;margin:0}
+.size-chip:has(input:checked){background:var(--green-light);border-color:var(--green);color:var(--green-dark)}
+.band-row{border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;background:#fafbfc}
+
+/* toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#1a202c;color:white;border-radius:8px;padding:12px 20px;font-size:14px;z-index:600;box-shadow:0 4px 16px rgba(0,0,0,.3);transform:translateY(80px);opacity:0;transition:all .25s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* log box */
+.log-box{background:#1a202c;color:#a0aec0;border-radius:8px;padding:14px 16px;font-size:12px;font-family:monospace;line-height:1.7;max-height:260px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+
+/* misc */
+.empty-row td{text-align:center;color:var(--gray);padding:32px}
+.mono{font-family:monospace;font-size:12px}
+.amt{font-weight:700}
+</style>
+</head>
+<body>
+<!-- ===== injected: in-browser mock backend (portfolio demo) ===== -->
+<script>
+/* ============================================================================
+   B2B Catalog — in-browser MOCK BACKEND (portfolio demo, no server required).
+   Overrides window.fetch so the real admin UI runs entirely client-side with
+   seeded sample data. Edits last for the session (refresh = clean reset).
+   ============================================================================ */
+(function () {
+  try { localStorage.setItem('admin_token', 'demo'); } catch (e) {}   // auto-login (skip login screen)
+  try { localStorage.removeItem('admin_view'); } catch (e) {}         // always boot on Dashboard
+
+  /* placeholder product image — data-URI SVG tinted by art no (offline, crisp) */
+  function ph(artno) {
+    var h = 0, s = String(artno || '');
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+    var svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 100'>"
+      + "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>"
+      + "<stop offset='0' stop-color='hsl(" + h + ",42%,89%)'/>"
+      + "<stop offset='1' stop-color='hsl(" + ((h + 40) % 360) + ",36%,78%)'/></linearGradient></defs>"
+      + "<rect width='80' height='100' fill='url(#g)'/>"
+      + "<text x='40' y='54' font-size='7.5' font-family='monospace' fill='hsl(" + h + ",28%,40%)' text-anchor='middle'>" + s + "</text></svg>";
+    return "data:image/svg+xml," + encodeURIComponent(svg);
+  }
+
+  /* ----------------------------- seed data ----------------------------- */
+  var DB = {
+    sessions: [
+      { id: 1, name: "W'25", is_live: 1, sort_order: 0, created_at: '2026-01-02' },
+      { id: 2, name: 'Winter 2026', is_live: 0, sort_order: 1, created_at: '2026-02-10' }
+    ],
+    groups: [ { id: 1, name: 'F/S General', sort_order: 0 }, { id: 2, name: 'H/S J&K', sort_order: 1 } ],
+    products: [],
+    collections: [
+      coll(1, 'Lowers',         1, 'any', [{ field: 'category', op: 'contains', value: 'LOWER' }]),
+      coll(2, 'Polos',          1, 'all', [{ field: 'product_type', op: 'equals', value: 'Polo' }]),
+      coll(3, 'Knitted Shirts', 1, 'all', [{ field: 'category', op: 'equals', value: 'KNITTED SHIRTS' }]),
+      coll(4, 'Lycra Stretch',  2, 'all', [{ field: 'key_features', op: 'contains', value: 'LYCRA' }])
+    ],
+    collActive: {}, collOrder: {},
+    orders: [],
+    settings: { store_name: 'Confidence Clothing', catalog_title: 'Wholesale Catalogue', catalog_season: "W'25", quick_qty_presets: '12, 24, 48, 100' },
+    seq: { coll: 5, group: 3, sess: 3 }
+  };
+  function coll(id, name, gid, mt, conds) {
+    return { id: id, name: name, group_id: gid, match_type: mt, sort_mode: 'manual', sort_order: id, created_at: '2026-01-05',
+      rules_json: JSON.stringify(conds), rule_field: conds[0].field, rule_op: conds[0].op, rule_value: conds[0].value };
+  }
+
+  var PCOLS = ['artno', 'title', 'category', 'product_type', 'fabric', 'wsp', 'mrp', 'visible', 'tags', 'color_count', '_lycra', 'session_id'];
+  [
+    ['0157DL', 'AUTUM BASIC LOWER WITH PIPING & 1 SIDE ZIP', 'BASIC LOWER', 'Lower', '2T FLEECE', 650, 1350, 0, 'winter,fleece,side-zip', 3, 0, 1],
+    ['1000LF', 'WINTER BASIC LOWER WITH 1 SIDE ZIP', 'BASIC LOWER', 'Lower', '3T FLEECE', 760, 1550, 1, 'winter,fleece', 4, 0, 1],
+    ['1200PT', 'ALL SEASON LOWER WITH SIDE ZIP', 'BASIC LOWER', 'Lower', 'HEAVY SINKER', 560, 1150, 1, 'all-season', 2, 0, 1],
+    ['2309DL', 'CHECKERED LOWER WITH SIDE ZIP & BACK POCKET', 'DESIGNER LOWER', 'Lower', 'HEAVY SINKER', 720, 1450, 1, 'checkered,pocket', 3, 0, 1],
+    ['2310DL', 'DESIGNER LOWER WITH SIDE ZIP & BACK POCKET', 'DESIGNER LOWER', 'Lower', 'SELF DESIGN', 760, 1550, 1, 'designer', 5, 0, 1],
+    ['2350DL', 'SINKER LYCRA DESIGNER LOWER', 'DESIGNER LOWER', 'Lower', 'SINKER LYCRA', 795, 1350, 1, 'lycra,stretch', 6, 1, 1],
+    ['4185FP', 'MEN FULL SLEEVE KNITTED SHIRT - UMBER', 'KNITTED SHIRTS', 'Shirt', 'COTTON KNIT', 540, 1099, 1, 'full-sleeve,knit', 4, 0, 1],
+    ['4188FP', 'MEN FULL SLEEVE KNITTED SHIRT - MIDNIGHT', 'KNITTED SHIRTS', 'Shirt', 'COTTON KNIT', 540, 1099, 1, 'full-sleeve,knit', 4, 0, 1],
+    ['4189FP', 'MEN CHECKED SHIRT FOR MEN', 'CASUAL SHIRTS', 'Shirt', 'COTTON', 495, 999, 0, 'checked,casual', 3, 0, 1],
+    ['5001PO', 'MEN CLASSIC COLLAR POLO - NAVY', 'POLOS', 'Polo', 'PIQUE COTTON', 430, 899, 1, 'polo,collar', 6, 0, 1],
+    ['5002PO', 'MEN CLASSIC COLLAR POLO - BOTTLE GREEN', 'POLOS', 'Polo', 'PIQUE COTTON', 430, 899, 1, 'polo,collar', 6, 0, 1],
+    ['6101TS', 'MEN HALF SLEEVE CASUAL TEE', 'HALF SLEEVE TEES', 'T-Shirt', 'COTTON', 285, 599, 1, 'tee,half-sleeve', 8, 0, 1],
+    ['6110TS', 'MEN ATHLETIC LEISURE TEE', 'HALF SLEEVE TEES', 'T-Shirt', 'DRY-FIT', 330, 699, 1, 'tee,athletic', 5, 0, 1],
+    ['7001SH', 'MEN BLACK DRAWSTRING SHORTS', 'SHORTS', 'Shorts', 'FRENCH TERRY', 360, 749, 1, 'shorts,drawstring', 3, 0, 1],
+    ['7004SH', 'MEN BLACK SPORTS SHORTS', 'SHORTS', 'Shorts', 'POLYESTER', 310, 649, 0, 'shorts,sports', 4, 0, 1],
+    ['8002CO', 'CO-ORD LOUNGE SET - BEIGE', 'CO-ORDS', 'Co-ord', 'WAFFLE KNIT', 980, 1999, 1, 'co-ord,loungewear', 3, 0, 1],
+    ['9001JK', 'WINTER PUFFER JACKET', 'JACKETS', 'Jacket', 'NYLON QUILT', 1450, 2999, 1, 'winter,jacket', 4, 0, 2],
+    ['9008SW', 'HOODED SWEATSHIRT - GREY', 'SWEATSHIRTS', 'Sweatshirt', 'LOOP KNIT', 690, 1399, 1, 'winter,hoodie', 5, 0, 2]
+  ].forEach(function (r) {
+    var p = {}; PCOLS.forEach(function (c, i) { p[c] = r[i]; });
+    p.key_features = p._lycra ? 'LYCRA' : ''; delete p._lycra;
+    p.wsp = String(p.wsp); p.mrp = String(p.mrp);
+    p.handle = p.artno.toLowerCase(); p.fit_type = 'REGULAR FIT'; p.color_pattern = ''; p.shade_card_image = '';
+    p.season = p.session_id === 2 ? 'Winter 2026' : "W'25"; p.sort_order = 0;
+    DB.products.push(p);
+  });
+
+  DB.orders = [
+    mkOrder('CC-20418', 'Sharma Garments', '98xxxxxx21', '2026-06-15T11:04', 'new',
+      [['2350DL', 'SINKER LYCRA DESIGNER LOWER', 'L', 24, 795], ['5001PO', 'CLASSIC COLLAR POLO - NAVY', 'XL', 36, 430]]),
+    mkOrder('CC-20417', 'Metro Wholesale', '90xxxxxx07', '2026-06-14T17:42', 'confirmed',
+      [['1000LF', 'WINTER BASIC LOWER', 'M', 48, 760]]),
+    mkOrder('CC-20416', 'Apex Distributors', '97xxxxxx55', '2026-06-13T09:10', 'shipped',
+      [['6101TS', 'HALF SLEEVE CASUAL TEE', 'L', 120, 285], ['7001SH', 'BLACK DRAWSTRING SHORTS', 'M', 60, 360]])
+  ];
+  function mkOrder(oid, party, phone, when, status, items) {
+    var its = items.map(function (x) { return { artno: x[0], product_title: x[1], sku: x[0] + '-' + x[2], size: x[2], color: '', qty: x[3], price: x[4], subtotal: x[3] * x[4] }; });
+    var pcs = its.reduce(function (s, i) { return s + i.qty; }, 0), amt = its.reduce(function (s, i) { return s + i.subtotal; }, 0);
+    return { order_id: oid, party_name: party, contact_person: 'Proprietor', phone: phone, email: '', address: 'Wholesale Market', city: '', state: '', pincode: '', gst: '', notes: '',
+      total_pieces: pcs, total_amount: amt, status: status, received_at: when, updated_at: when, items: its };
+  }
+
+  /* ----------------------------- helpers ----------------------------- */
+  function liveSid() { var s = DB.sessions.filter(function (x) { return x.is_live; })[0] || DB.sessions[0]; return s ? s.id : 1; }
+  function resolveSid(qs) { var v = qs.get('session_id'); return v ? parseInt(v, 10) : liveSid(); }
+  function sessionProducts(sid) { return DB.products.filter(function (p) { return p.session_id === sid; }); }
+  function findProd(artno, sid) { return DB.products.filter(function (p) { return p.session_id === sid && p.artno === artno; })[0]; }
+  function decorate(p) {
+    var wsp = parseInt(p.wsp, 10) || 0, mrp = parseInt(p.mrp, 10) || 0, v = [];
+    ['M', 'L', 'XL', '2XL', '3XL'].forEach(function (s) { v.push({ sku: p.artno + '-' + s, size: s, price: String(wsp), compare_at: String(mrp || '') }); });
+    ['4XL', '5XL'].forEach(function (s) { v.push({ sku: p.artno + '-' + s, size: s, price: String(wsp ? wsp + 120 : ''), compare_at: String(mrp ? mrp + 200 : '') }); });
+    var o = Object.assign({}, p);
+    o.type = p.category; o.variants = v; o.sizes = v.map(function (x) { return x.size; });
+    o.colors = []; o.images = []; o.thumb = ph(p.artno); o.price = String(wsp);
+    return o;
+  }
+  function collConditions(c) {
+    if (c.rules_json) { try { var a = JSON.parse(c.rules_json); if (a && a.length) return a; } catch (e) {} }
+    return [{ field: c.rule_field, op: c.rule_op, value: c.rule_value }];
+  }
+  function collMatch(p, c) {
+    var conds = collConditions(c), mt = c.match_type === 'any' ? 'any' : 'all';
+    function test(cd) { var fv = String(p[cd.field] != null ? p[cd.field] : '').toLowerCase(), val = String(cd.value || '').toLowerCase().trim(); if (!val) return false; return cd.op === 'contains' ? fv.indexOf(val) >= 0 : fv === val; }
+    return mt === 'any' ? conds.some(test) : conds.every(test);
+  }
+  function collProducts(c, sid) { return sessionProducts(sid).filter(function (p) { return collMatch(p, c); }); }
+  function listCollections(sid) {
+    return DB.collections.slice().sort(function (a, b) { return (a.sort_order - b.sort_order) || (a.id - b.id); }).map(function (c) {
+      var o = Object.assign({}, c); o.conditions = collConditions(c); o.match_type = c.match_type || 'all';
+      o.product_count = collProducts(c, sid).length; return o;
+    });
+  }
+  function collectionProductsList(cid, sid) {
+    var c = DB.collections.filter(function (x) { return x.id === cid; })[0]; if (!c) return [];
+    var list = collProducts(c, sid).map(decorate);
+    list.sort(function (a, b) { return String(a.artno).toLowerCase().localeCompare(String(b.artno).toLowerCase()); });
+    var ord = DB.collOrder[cid];
+    if (ord) list.sort(function (a, b) { var ia = ord.indexOf(a.artno), ib = ord.indexOf(b.artno); return (ia < 0 ? 1e9 : ia) - (ib < 0 ? 1e9 : ib); });
+    list.forEach(function (p) { p.coll_active = !(DB.collActive[cid + '|' + p.artno] === 0); });
+    return list;
+  }
+  function uniqueName(base) {
+    var ex = function (x) { return DB.collections.some(function (c) { return c.name.toLowerCase() === x.toLowerCase(); }); };
+    if (!ex(base + ' (copy)')) return base + ' (copy)';
+    var i = 2; while (ex(base + ' (copy ' + i + ')')) i++; return base + ' (copy ' + i + ')';
+  }
+  function prodCount(sid) { var ps = sessionProducts(sid), vis = ps.filter(function (p) { return p.visible; }).length; return { total: ps.length, visible: vis, hidden: ps.length - vis }; }
+  function orderStats() { return { total: DB.orders.length, new: DB.orders.filter(function (o) { return o.status === 'new'; }).length, revenue: DB.orders.filter(function (o) { return o.status !== 'cancelled'; }).reduce(function (s, o) { return s + (o.total_amount || 0); }, 0) }; }
+
+  var PFIELDS = ['title', 'category', 'product_type', 'fabric', 'fit_type', 'color_pattern', 'color_count', 'tags', 'season', 'key_features', 'wsp', 'mrp', 'sort_order', 'handle'];
+  function createProduct(body, sid) {
+    var artno = (body.artno || '').trim().toUpperCase(); if (!artno) return { success: false, error: 'Art number is required' };
+    if (findProd(artno, sid)) return { success: false, error: 'That Art No already exists in this session' };
+    var p = { artno: artno, session_id: sid }; PFIELDS.forEach(function (f) { p[f] = body[f] != null ? body[f] : ''; });
+    p.visible = body.visible != null ? (+body.visible ? 1 : 0) : 1; p.color_count = parseInt(body.color_count, 10) || 0; p.shade_card_image = '';
+    if (typeof p.tags !== 'string') p.tags = (p.tags || []).join(', ');
+    DB.products.unshift(p); return { success: true };
+  }
+  function updateProduct(artno, body, sid) {
+    var p = findProd(artno, sid); if (!p) return { success: false, error: 'not found' };
+    PFIELDS.forEach(function (f) { if (body[f] != null) p[f] = body[f]; });
+    if (body.visible != null) p.visible = (+body.visible ? 1 : 0);
+    if (body.tags != null && typeof body.tags !== 'string') p.tags = (body.tags || []).join(', ');
+    return { success: true };
+  }
+  function createCollection(body) {
+    var conds = body.conditions; if (!conds && body.field) conds = [{ field: body.field, op: body.op || 'equals', value: body.value || '' }];
+    conds = conds || []; var first = conds[0] || { field: 'category', op: 'equals', value: '' };
+    if (!body.name || !body.name.trim()) return { success: false, error: 'Collection name is required' };
+    if (DB.collections.some(function (c) { return c.name.toLowerCase() === body.name.trim().toLowerCase(); })) return { success: false, error: 'A collection named "' + body.name + '" already exists' };
+    var c = { id: DB.seq.coll++, name: body.name.trim(), group_id: parseInt(body.group_id, 10) || DB.groups[0].id, match_type: body.match_type === 'any' ? 'any' : 'all',
+      sort_mode: 'manual', sort_order: DB.collections.length, created_at: 'now', rules_json: JSON.stringify(conds), rule_field: first.field, rule_op: first.op, rule_value: first.value };
+    DB.collections.push(c); return { success: true, id: c.id, name: c.name, group_id: c.group_id };
+  }
+  function updateCollection(cid, body) {
+    var c = DB.collections.filter(function (x) { return x.id === cid; })[0]; if (!c) return { success: false };
+    if (body.name && DB.collections.some(function (x) { return x.id !== cid && x.name.toLowerCase() === body.name.trim().toLowerCase(); })) return { success: false, error: 'A collection named "' + body.name + '" already exists' };
+    var conds = body.conditions; if (!conds && body.field) conds = [{ field: body.field, op: body.op || 'equals', value: body.value || '' }];
+    if (conds && conds.length) { c.rules_json = JSON.stringify(conds); c.rule_field = conds[0].field; c.rule_op = conds[0].op; c.rule_value = conds[0].value; }
+    if (body.name) c.name = body.name.trim();
+    if (body.match_type) c.match_type = body.match_type === 'any' ? 'any' : 'all';
+    if (body.group_id) c.group_id = parseInt(body.group_id, 10);
+    if (body.sort_mode) c.sort_mode = body.sort_mode;
+    if (body.order) DB.collOrder[cid] = body.order;
+    return { success: true };
+  }
+  function duplicateCollection(cid, body) {
+    var c = DB.collections.filter(function (x) { return x.id === cid; })[0]; if (!c) return { success: false, error: 'not found' };
+    var name = (body && body.name || '').trim();
+    if (name) { if (DB.collections.some(function (x) { return x.name.toLowerCase() === name.toLowerCase(); })) return { success: false, error: 'A collection named "' + name + '" already exists' }; }
+    else name = uniqueName(c.name);
+    var nc = Object.assign({}, c); nc.id = DB.seq.coll++; nc.name = name; nc.sort_order = DB.collections.length; DB.collections.push(nc);
+    return { success: true, id: nc.id, name: name, group_id: nc.group_id };
+  }
+
+  /* ----------------------------- router ----------------------------- */
+  function route(method, path, qs, body) {
+    var parts = path.split('/').filter(Boolean);   // e.g. api/admin/collections/3/update
+    var p = parts.join('/');
+
+    if (method === 'GET') {
+      if (p === 'api/products') return sessionProducts(liveSid()).filter(function (x) { return x.visible; }).map(decorate);
+      if (p === 'api/settings') return DB.settings;
+      if (p === 'api/admin/dashboard') return { products: prodCount(liveSid()), orders: orderStats(), settings: DB.settings };
+      if (p === 'api/admin/sessions') return DB.sessions.map(function (s) { var o = Object.assign({}, s); o.product_count = sessionProducts(s.id).length; return o; });
+      if (p === 'api/admin/collection-groups') return DB.groups.map(function (g) { var o = Object.assign({}, g); o.collection_count = DB.collections.filter(function (c) { return c.group_id === g.id; }).length; return o; });
+      if (p === 'api/admin/collections') return listCollections(resolveSid(qs));
+      if (parts[2] === 'collections' && parts[4] === 'products') return collectionProductsList(parseInt(parts[3], 10), resolveSid(qs));
+      if (p === 'api/admin/products') return sessionProducts(resolveSid(qs)).map(decorate);
+      if (p === 'api/admin/settings') return DB.settings;
+      if (parts[2] === 'orders' && parts.length === 4) { var o = DB.orders.filter(function (x) { return x.order_id === decodeURIComponent(parts[3]); })[0]; return o || {}; }
+      if (p === 'api/admin/orders') { var st = qs.get('status'); return (st ? DB.orders.filter(function (o) { return o.status === st; }) : DB.orders).slice(); }
+      return {};
+    }
+
+    var sid = resolveSid(qs);
+    if (p === 'api/admin/login') return { success: true, token: 'demo' };
+    if (p === 'api/admin/logout') return { success: true };
+
+    if (p === 'api/admin/products/create') return createProduct(body, sid);
+    if (parts[2] === 'products' && parts[4] === 'update') return updateProduct(decodeURIComponent(parts[3]), body, sid);
+    if (parts[2] === 'products' && parts[4] === 'delete') { var a = decodeURIComponent(parts[3]); DB.products = DB.products.filter(function (x) { return !(x.session_id === sid && x.artno === a); }); return { success: true }; }
+    if (parts[2] === 'products' && parts[4] === 'toggle') { var pr = findProd(decodeURIComponent(parts[3]), sid); if (pr) pr.visible = pr.visible ? 0 : 1; return { success: true, visible: pr ? pr.visible : 0 }; }
+
+    if (p === 'api/admin/collections/create') return createCollection(body);
+    if (parts[2] === 'collections' && parts[4] === 'update') return updateCollection(parseInt(parts[3], 10), body);
+    if (parts[2] === 'collections' && parts[4] === 'duplicate') return duplicateCollection(parseInt(parts[3], 10), body);
+    if (parts[2] === 'collections' && parts[4] === 'delete') { var cid = parseInt(parts[3], 10); DB.collections = DB.collections.filter(function (c) { return c.id !== cid; }); return { success: true }; }
+    if (parts[2] === 'collections' && parts[4] === 'product-active') { var cid2 = parseInt(parts[3], 10); DB.collActive[cid2 + '|' + body.artno] = body.active ? 1 : 0; return { success: true, active: !!body.active }; }
+
+    if (p === 'api/admin/collection-groups/create') { var g = { id: DB.seq.group++, name: body.name || 'New group', sort_order: DB.groups.length }; DB.groups.push(g); return { success: true, id: g.id }; }
+    if (parts[2] === 'collection-groups' && parts[4] === 'rename') { var gg = DB.groups.filter(function (x) { return x.id === parseInt(parts[3], 10); })[0]; if (gg) gg.name = body.name || gg.name; return { success: true }; }
+    if (parts[2] === 'collection-groups' && parts[4] === 'delete') { var gid = parseInt(parts[3], 10), fb = DB.groups.filter(function (x) { return x.id !== gid; })[0]; DB.collections.forEach(function (c) { if (c.group_id === gid && fb) c.group_id = fb.id; }); DB.groups = DB.groups.filter(function (x) { return x.id !== gid; }); return { success: true }; }
+    if (p === 'api/admin/collection-groups/reorder') { (body.order || []).forEach(function (id, i) { var gr = DB.groups.filter(function (x) { return x.id === id; })[0]; if (gr) gr.sort_order = i; }); return { success: true }; }
+
+    if (p === 'api/admin/sessions/create') { var s = { id: DB.seq.sess++, name: body.name || 'New Session', is_live: 0, sort_order: DB.sessions.length, created_at: 'now' }; if (body.copy_from) sessionProducts(parseInt(body.copy_from, 10)).forEach(function (pp) { var np = Object.assign({}, pp); np.session_id = s.id; DB.products.push(np); }); DB.sessions.push(s); return { success: true, id: s.id }; }
+    if (parts[2] === 'sessions' && parts[4] === 'live') { var lid = parseInt(parts[3], 10); DB.sessions.forEach(function (s) { s.is_live = s.id === lid ? 1 : 0; }); return { success: true }; }
+    if (parts[2] === 'sessions' && parts[4] === 'rename') { var ss = DB.sessions.filter(function (x) { return x.id === parseInt(parts[3], 10); })[0]; if (ss) ss.name = body.name || ss.name; return { success: true }; }
+    if (parts[2] === 'sessions' && parts[4] === 'delete') { var did = parseInt(parts[3], 10); if (DB.sessions.length > 1) { DB.sessions = DB.sessions.filter(function (x) { return x.id !== did; }); DB.products = DB.products.filter(function (pp) { return pp.session_id !== did; }); if (!DB.sessions.some(function (s) { return s.is_live; })) DB.sessions[0].is_live = 1; } return { success: true }; }
+
+    if (parts[2] === 'orders' && parts[4] === 'status') { var od = DB.orders.filter(function (o) { return o.order_id === decodeURIComponent(parts[3]); })[0]; if (od) od.status = body.status || od.status; return { success: true }; }
+
+    if (p === 'api/admin/settings') { Object.assign(DB.settings, body || {}); return { success: true }; }
+    if (p === 'api/admin/upload-excel') return { success: false, error: 'Excel import is disabled in this offline demo build.' };
+
+    return { success: true };
+  }
+
+  /* --------------------------- install fetch --------------------------- */
+  var orig = window.fetch ? window.fetch.bind(window) : null;
+  window.fetch = function (url, opts) {
+    opts = opts || {};
+    var href = typeof url === 'string' ? url : (url && url.url) || String(url);
+    var path, qs;
+    try { var u = new URL(href, (typeof location !== 'undefined' ? location.origin : 'http://demo')); path = u.pathname.replace(/\/+$/, ''); qs = u.searchParams; }
+    catch (e) { path = href.split('?')[0].replace(/\/+$/, ''); qs = new URLSearchParams(href.split('?')[1] || ''); }
+    if (path.indexOf('/api/') !== 0) return orig ? orig(url, opts) : Promise.reject(new Error('offline demo: no network'));
+    var method = (opts.method || 'GET').toUpperCase();
+    var body = {}; if (opts.body) { try { body = JSON.parse(opts.body); } catch (e) { body = {}; } }
+    var out; try { out = route(method, path, qs, body); } catch (err) { out = { success: false, error: err.message }; }
+    if (out === undefined) out = { success: true };
+    return Promise.resolve(new Response(JSON.stringify(out), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+  };
+
+  window.__DEMO_DB = DB;   // exposed for tinkering in the console
+  if (typeof module !== 'undefined' && module.exports) module.exports = { route: route, DB: DB };
+})();
+
+</script>
+
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div style="width:52px;height:52px;background:var(--green-dark);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto;font-weight:900;font-size:14px;color:white">CC</div>
+      <h1>Confidence Clothing</h1>
+      <p>Admin Panel</p>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="pw-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-err">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="layout">
+    <!-- sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-brand">
+        <h2>Confidence Clothing</h2>
+        <p>Admin Panel</p>
+      </div>
+      <nav class="nav" id="nav">
+        <div class="nav-item active" data-page="dashboard" onclick="goto('dashboard')">
+          <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </div>
+        <div class="nav-item" data-page="products" onclick="goto('products')">
+          <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 3H8L6 7h12l-2-4z"/></svg>
+          Products
+        </div>
+        <div class="nav-item" data-page="collections" onclick="goto('collections')">
+          <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/><circle cx="2.5" cy="6" r="0.6" fill="currentColor"/></svg>
+          Collections
+        </div>
+        <div class="nav-item" data-page="orders" onclick="goto('orders')">
+          <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Orders
+        </div>
+        <div class="nav-item" data-page="settings" onclick="goto('settings')">
+          <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+          Settings
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- main -->
+    <div class="main">
+      <div class="topbar">
+        <h1 id="page-title">Dashboard</h1>
+        <div class="topbar-right" id="topbar-right">Confidence Clothing Admin</div>
+      </div>
+      <div class="content" id="content">
+        <div style="padding:60px;text-align:center;color:var(--gray)">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-bg" id="order-modal">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-hdr">
+      <h2 id="om-title">Order Detail</h2>
+      <button class="modal-close" onclick="closeOrderModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body" id="om-body"></div>
+    <div class="modal-footer">
+      <div style="flex:1;display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px;font-weight:500">Status:</span>
+        <select id="om-status" style="border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
+          <option value="new">New</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="processing">Processing</option>
+          <option value="shipped">Shipped</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="saveOrderStatus()">Save</button>
+      </div>
+      <button class="btn btn-secondary" onclick="closeOrderModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHADE CARD MODAL -->
+<div class="modal-bg" id="shade-modal">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-hdr">
+      <h2>Process Shade Cards</h2>
+      <button class="modal-close" onclick="closeShadeModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--gray);margin-bottom:14px">Scans the <strong>Shade card/</strong> folder and reads each image locally using OCR to extract colour codes and names — no internet or API needed.</p>
+      <div class="log-box" id="shade-log">Ready. Click Run to start.</div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:12px;cursor:pointer">
+        <input type="checkbox" id="shade-force"> Re-process already completed shade cards
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeShadeModal()">Close</button>
+      <button class="btn btn-primary" id="shade-run-btn" onclick="runShadeCards()">&#9654; Run</button>
+    </div>
+  </div>
+</div>
+
+<!-- BULK IMPORT MODAL -->
+<div class="modal-bg" id="bulk-import-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-hdr">
+      <h2>Bulk Import Products</h2>
+      <button class="modal-close" onclick="closeBulkImport()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--gray);margin-bottom:12px">
+        Imports into session <strong id="bi-session">—</strong>. Products are added/updated from the
+        Excel file by Art No; other sessions are unaffected.
+      </p>
+      <div id="bi-drop" class="bi-drop"
+           ondragover="event.preventDefault();this.classList.add('over')"
+           ondragleave="this.classList.remove('over')"
+           ondrop="biDrop(event)"
+           onclick="document.getElementById('bulk-excel-input').click()">
+        <input type="file" id="bulk-excel-input" accept=".xlsx" style="display:none"
+               onchange="bulkImportExcel(this.files[0])">
+        <div class="bi-drop-icon">&#128229;</div>
+        <p><strong>Click to browse</strong> or drag &amp; drop your <b>.xlsx</b> here</p>
+        <p class="bi-hint">Only .xlsx files are supported</p>
+      </div>
+      <div id="bi-status" class="bi-status"></div>
+      <div class="bi-tmpl">
+        <div>
+          <div style="font-weight:600;font-size:13px">Need the format?</div>
+          <div style="font-size:12px;color:var(--gray)">Download the template, fill it in, then import.</div>
+        </div>
+        <a class="btn btn-secondary btn-sm" href="/api/template-excel" download="catalogue_template.xlsx">&#11015; Template</a>
+      </div>
+      <details class="bi-cols">
+        <summary>Columns (these are the product fields)</summary>
+        <div>SR &middot; Image &middot; <b>ARTNO</b> &middot; Title/Description &middot; Product Type &middot; CATEGORY &middot; Fabric &middot; Fit Type &middot; Lycra &middot; COLOR 1 &middot; SIZE &middot; W.S.P. &middot; M.R.P. &middot; SIZE &middot; W.S.P. &middot; M.R.P. &middot; Tags</div>
+        <div style="margin-top:6px;color:var(--gray)">The two SIZE / W.S.P. / M.R.P. groups let you price size ranges differently (e.g. <code>M-3XL</code> and <code>4XL-5XL</code>). Only <b>ARTNO</b> is required.</div>
+      </details>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeBulkImport()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Product create/edit and bulk edit now render as full pages in #content (not modals). -->
+
+<!-- ADD / REMOVE TAGS MODAL -->
+<div class="modal-bg" id="tag-modal" onclick="if(event.target===this)closeTagModal()">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-hdr">
+      <h2 id="tag-modal-title">Add tags</h2>
+      <button class="modal-close" onclick="closeTagModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="tag-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="tag-modal-search" placeholder="Search to find or create tags" autocomplete="off"
+               oninput="tagModal.query=this.value;renderTagList()" onkeydown="tagSearchKey(event)">
+      </div>
+      <div class="tag-list" id="tag-modal-list"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeTagModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="tagModalSave()">Save</button>
+    </div>
+  </div>
+</div>
+
+<datalist id="dl-categories"></datalist>
+<datalist id="dl-fabrics"></datalist>
+<datalist id="dl-producttypes"></datalist>
+
+<!-- Collection PDF output (one product per page) — only shown when printing -->
+<div id="pdf-print-area"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let TOKEN = localStorage.getItem('admin_token') || '';
+let currentPage = 'dashboard';
+let currentOrderId = null;
+let allProducts = [];
+let allOrders = [];
+let orderFilter = 'all';
+let currentOrderList = [];   // the orders currently rendered (after the status filter), for paging
+let sessionList = [];          // catalogue sessions (tabs on the Products page)
+let activeSessionId = null;    // session the Products page is currently editing
+let selectedArtnos = new Set();// products ticked for bulk edit
+let shownProducts = [];        // the product list currently rendered (respects search filter)
+let productFilters = {q:'', status:'', chips:[]}; // Products page search & filter (chips: {field,op,value})
+let prodSort = {field:'', dir:'asc'};             // Products table column sort ('' = DB/natural order)
+let prodPage = 0, collPage = 0, orderPage = 0;    // 0-based page index per list (100 rows/page)
+
+// ── Pagination (100 per page, Prev/Next) ───────────────────────────────────
+const PAGE_SIZE = 100;
+function pageCount(total) { return Math.max(1, Math.ceil(total / PAGE_SIZE)); }
+function clampPage(page, total) { return Math.min(Math.max(0, page | 0), pageCount(total) - 1); }
+function pageSlice(arr, page) { return arr.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE); }
+// Renders the Prev / "Page X of Y" / Next bar; goFn is a function name called with the new 0-based page.
+function pagerHtml(total, page, goFn) {
+  if (total <= PAGE_SIZE) return '';
+  const pages = pageCount(total);
+  const start = page * PAGE_SIZE + 1, end = Math.min(total, (page + 1) * PAGE_SIZE);
+  return `<div class="pager">
+    <span class="pager-info">Showing ${start}–${end} of ${total}</span>
+    <span class="pager-ctrl">
+      <button class="btn btn-secondary btn-sm" ${page <= 0 ? 'disabled' : ''} onclick="${goFn}(${page - 1})">&#8249; Previous</button>
+      <span class="pager-page">Page ${page + 1} of ${pages}</span>
+      <button class="btn btn-secondary btn-sm" ${page >= pages - 1 ? 'disabled' : ''} onclick="${goFn}(${page + 1})">Next &#8250;</button>
+    </span>
+  </div>`;
+}
+function _scrollListTop() { window.scrollTo(0, 0); }
+
+// Keep the sticky season tabs sitting exactly under the (also sticky) topbar, whatever its height.
+function syncTopbarHeight() {
+  const tb = document.querySelector('.topbar');
+  if (tb) document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px');
+}
+window.addEventListener('resize', syncTopbarHeight);
+
+// ── API ─────────────────────────────────────────────────────────────────
+
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN }
+  };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  return r.json();
+}
+
+// ── AUTH ────────────────────────────────────────────────────────────────
+
+async function doLogin() {
+  const pw = document.getElementById('pw-input').value;
+  const err = document.getElementById('login-err');
+  err.style.display = 'none';
+  try {
+    const data = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({password: pw})
+    }).then(r => r.json());
+    if (data.success) {
+      TOKEN = data.token;
+      localStorage.setItem('admin_token', TOKEN);
+      showApp();
+      goto('dashboard');
+    } else {
+      err.style.display = 'block';
+    }
+  } catch(e) {
+    err.textContent = 'Server error: ' + e.message;
+    err.style.display = 'block';
+  }
+}
+
+async function doLogout() {
+  await api('POST', '/api/admin/logout');
+  TOKEN = '';
+  localStorage.removeItem('admin_token');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+}
+
+async function checkAuth() {
+  if (!TOKEN) { return; }
+  try {
+    const data = await api('GET', '/api/admin/dashboard');
+    if (data.error) { TOKEN = ''; localStorage.removeItem('admin_token'); return; }
+    showApp();
+    restoreView();   // refresh → return to the page we were on, not always Dashboard
+  } catch(e) {
+    TOKEN = ''; localStorage.removeItem('admin_token');
+  }
+}
+
+function showApp() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+// ── NAVIGATION ──────────────────────────────────────────────────────────
+
+function goto(page) {
+  currentPage = page;
+  saveView({page: page});
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === page);
+  });
+  const titles = {dashboard:'Dashboard', products:'Products', collections:'Collections', orders:'Orders', settings:'Settings'};
+  document.getElementById('page-title').textContent = titles[page] || page;
+  if (page === 'dashboard') loadDashboard();
+  else if (page === 'products') loadProducts();
+  else if (page === 'collections') loadCollections();
+  else if (page === 'orders') loadOrders();
+  else if (page === 'settings') loadSettings();
+}
+
+// Persist the current admin view so a browser refresh restores it (not Dashboard).
+function saveView(v) {
+  try { localStorage.setItem('admin_view', JSON.stringify(v)); } catch (e) {}
+}
+async function restoreView() {
+  let v = null;
+  try { v = JSON.parse(localStorage.getItem('admin_view') || 'null'); } catch (e) {}
+  // Restore an open collection's detail page
+  if (v && v.page === 'collections' && v.collectionId != null) {
+    currentPage = 'collections';
+    document.querySelectorAll('.nav-item').forEach(el =>
+      el.classList.toggle('active', el.dataset.page === 'collections'));
+    await loadCollections();           // load allCollections + activeSessionId, render list
+    if (allCollections.some(c => c.id === v.collectionId)) {
+      openCollection(v.collectionId);  // then render the saved collection's detail over it
+    }                                  // (else the collection was deleted → stay on the list)
+    return;
+  }
+  goto((v && v.page) || 'dashboard');
+}
+
+function setContent(html) {
+  // Default topbar; pages that want action buttons (Products) re-set #topbar-right after this.
+  const tr = document.getElementById('topbar-right');
+  if (tr) tr.innerHTML = 'Confidence Clothing Admin';
+  document.getElementById('content').innerHTML = html;
+  requestAnimationFrame(syncTopbarHeight);
+}
+
+// ── DASHBOARD ───────────────────────────────────────────────────────────
+
+async function loadDashboard() {
+  setContent('<div style="padding:40px;text-align:center;color:var(--gray)">Loading…</div>');
+  const data = await api('GET', '/api/admin/dashboard');
+  renderDashboard(data);
+}
+
+function renderDashboard(data) {
+  const p = data.products || {};
+  const o = data.orders   || {};
+  const rev = (o.revenue || 0).toLocaleString('en-IN');
+  setContent(`
+    <div class="stat-grid">
+      <div class="stat-card highlight">
+        <div class="stat-label">Visible Products</div>
+        <div class="stat-value">${p.visible||0}</div>
+        <div class="stat-sub">${p.hidden||0} hidden · ${p.total||0} total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value">${o.total||0}</div>
+        <div class="stat-sub">${o.new||0} new / pending</div>
+      </div>
+      <div class="stat-card highlight">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value" style="font-size:22px">₹${rev}</div>
+        <div class="stat-sub">excl. cancelled orders</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h3>Recent Orders</h3>
+        <button class="btn btn-secondary btn-sm" onclick="goto('orders')">View All</button>
+      </div>
+      <div id="dash-orders"><div style="padding:24px;text-align:center;color:var(--gray)">Loading…</div></div>
+    </div>
+  `);
+  api('GET', '/api/admin/orders').then(orders => {
+    const rows = orders.slice(0,10).map(o => `
+      <tr>
+        <td class="mono">${esc(o.order_id)}</td>
+        <td>${esc(o.party_name)}</td>
+        <td>${esc(o.phone)}</td>
+        <td>${parseInt(o.total_pieces)||0} pcs</td>
+        <td class="amt">₹${parseFloat(o.total_amount).toLocaleString('en-IN')}</td>
+        <td>${statusBadge(o.status)}</td>
+        <td>${esc(o.received_at).slice(0,16).replace('T',' ')}</td>
+        <td><button class="btn btn-sm btn-secondary" onclick="openOrderModal('${esc(o.order_id)}')">View</button></td>
+      </tr>`).join('');
+    document.getElementById('dash-orders').innerHTML = `<table>
+      <thead><tr><th>Order ID</th><th>Party</th><th>Phone</th><th>Qty</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead>
+      <tbody>${rows || '<tr class="empty-row"><td colspan="8">No orders yet</td></tr>'}</tbody>
+    </table>`;
+  });
+}
+
+// ── PRODUCTS ─────────────────────────────────────────────────────────────
+
+async function loadSessionList() {
+  const resp = await api('GET', '/api/admin/sessions');
+  // a stale/old server (no sessions route) or an expired token returns a non-array
+  sessionList = Array.isArray(resp) ? resp : [];
+  if (!activeSessionId || !sessionList.some(s => s.id === activeSessionId)) {
+    const live = sessionList.find(s => s.is_live);
+    activeSessionId = live ? live.id : (sessionList[0] ? sessionList[0].id : null);
+  }
+  return sessionList;
+}
+
+function activeSession() {
+  return sessionList.find(s => s.id === activeSessionId) || null;
+}
+
+async function loadProducts() {
+  setContent('<div style="padding:40px;text-align:center;color:var(--gray)">Loading…</div>');
+  try {
+    await loadSessionList();
+    const resp = await api('GET', '/api/admin/products?session_id=' + activeSessionId);
+    if (!Array.isArray(resp)) throw new Error((resp && resp.error) || 'Unexpected response');
+    allProducts = resp;
+    // Collections power the "Collection is/is not" filter (membership evaluated client-side).
+    allCollections = await api('GET', '/api/admin/collections?session_id=' + activeSessionId) || [];
+    if (!Array.isArray(allCollections)) allCollections = [];
+    productFilters = {q:'', status:'', chips:[]};
+    prodSort = {field:'', dir:'asc'};
+    prodPage = 0;
+    renderProducts();
+  } catch (e) {
+    setContent('<div style="padding:40px;text-align:center;color:#e53e3e">' +
+      'Could not load products.<br><small>' + esc(e.message) +
+      ' — if you just updated the app, restart the server (stop it and run <code>python run.py</code> again), then reload.</small></div>');
+  }
+}
+
+function switchSession(id) {
+  if (id === activeSessionId) return;
+  activeSessionId = id;
+  loadProducts();
+}
+
+function sessionTabsHtml() {
+  if (!sessionList.length) return '';
+  const tabs = sessionList.map(s =>
+    `<button class="sess-tab ${s.id===activeSessionId?'active':''}" onclick="switchSession(${s.id})">
+       ${s.is_live ? '<span class="sess-live-dot" title="Live on catalogue"></span>' : ''}
+       ${esc(s.name)}
+       <span class="sess-tab-count">${s.product_count}</span>
+     </button>`).join('');
+  return `<div class="sess-tabs">${tabs}
+     <button class="sess-tab sess-tab-add" onclick="openSessionsSettings()" title="Add or manage sessions in Settings">+ New Session</button>
+   </div>`;
+}
+
+// Jump straight to the Sessions settings page (no race with async loadSettings).
+function openSessionsSettings() {
+  currentPage = 'settings';
+  document.querySelectorAll('.nav-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.page === 'settings'));
+  openSetting('sessions');
+}
+
+function computeFilteredProducts() {
+  const f = productFilters;
+  const ql = (f.q || '').toLowerCase().trim();
+  const out = allProducts.filter(p => {
+    if (ql) {
+      const hay = [p.artno, p.title, p.category, p.product_type, p.fabric, p.tags]
+        .map(x => String(x || '').toLowerCase()).join(' ');
+      if (!hay.includes(ql)) return false;
+    }
+    if (f.status === 'live'  && !p.visible) return false;
+    if (f.status === 'draft' &&  p.visible) return false;
+    for (const ch of (f.chips || [])) {
+      const matches = pfChipMatch(p, ch);
+      if (ch.op === 'isnot' ? matches : !matches) return false;
+    }
+    return true;
+  });
+  if (prodSort.field) {
+    const sgn = prodSort.dir === 'desc' ? -1 : 1;
+    out.sort((a, b) => sgn * prodSortCompare(a, b, prodSort.field));
+  }
+  return out;
+}
+
+// Compare two products on one column (numeric for WSP, Live-before-Draft for Status,
+// natural/alphanumeric otherwise so "Art No 2" sorts before "Art No 10").
+function prodSortCompare(a, b, field) {
+  if (field === 'wsp')    return (parseFloat(a.wsp) || 0) - (parseFloat(b.wsp) || 0);
+  if (field === 'status') return (a.visible ? 1 : 0) - (b.visible ? 1 : 0);
+  return String(a[field] || '').localeCompare(String(b[field] || ''), undefined,
+    {numeric: true, sensitivity: 'base'});
+}
+
+// Click a header: same column → flip direction; new column → ascending.
+function setProdSort(field) {
+  if (prodSort.field === field) prodSort.dir = prodSort.dir === 'asc' ? 'desc' : 'asc';
+  else { prodSort.field = field; prodSort.dir = 'asc'; }
+  applyProductFilters();
+}
+function updateSortIndicators() {
+  document.querySelectorAll('#prod-table th.th-sort').forEach(th => {
+    const active = prodSort.field === th.dataset.sort;
+    th.classList.toggle('sorted', active);
+    const ind = th.querySelector('.sort-ind');
+    if (ind) {
+      ind.textContent = active ? (prodSort.dir === 'asc' ? '▲' : '▼') : '⇅';
+      ind.className = 'sort-ind' + (active ? '' : ' dim');
+    }
+  });
+}
+
+// Does product p satisfy one filter chip's value (the op is applied by the caller)?
+function pfChipMatch(p, ch) {
+  if (ch.field === 'collection') {
+    const coll = allCollections.find(c => String(c.name) === String(ch.value) || String(c.id) === String(ch.value));
+    return productMatchesCollection(p, coll);
+  }
+  return String(p[ch.field] || '').toLowerCase() === String(ch.value || '').toLowerCase();
+}
+
+// Evaluate a collection's rule (conditions + AND/OR) against a product, client-side.
+function productMatchesCollection(p, coll) {
+  if (!coll) return false;
+  const conds = (coll.conditions && coll.conditions.length)
+    ? coll.conditions
+    : [{field: coll.rule_field, op: coll.rule_op, value: coll.rule_value}];
+  const test = c => {
+    const fv = String(p[c.field] != null ? p[c.field] : '').toLowerCase();
+    const val = String(c.value || '').toLowerCase().trim();
+    if (!val) return false;
+    return c.op === 'contains' ? fv.includes(val) : fv === val;
+  };
+  return coll.match_type === 'any' ? conds.some(test) : conds.every(test);
+}
+
+function prodAnyFilter() {
+  const f = productFilters;
+  return !!(f.q || f.status || (f.chips && f.chips.length));
+}
+
+// ── Products search-bar filter: fields, popover state & chips ───────────────
+const PF_FIELDS = [
+  {key:'category',     label:'Category'},
+  {key:'product_type', label:'Product type'},
+  {key:'fabric',       label:'Fabric'},
+  {key:'collection',   label:'Collection'},
+];
+let pfPop = {open:false, field:null, op:'is', vq:''};   // Add-filter popover state
+
+function pfFieldLabel(k) { const f = PF_FIELDS.find(x => x.key === k); return f ? f.label : k; }
+function pfFieldValues(field) {
+  if (field === 'collection') return _uniqSorted(allCollections.map(c => c.name));
+  return _uniqSorted(allProducts.map(p => p[field]));
+}
+function pfChipsHtml() {
+  return (productFilters.chips || []).map((c, i) =>
+    `<span class="pf-chip"><span class="pf-chip-k">${esc(pfFieldLabel(c.field))} ${c.op === 'isnot' ? 'is not' : 'is'}</span> ${esc(c.value)}` +
+    `<button class="pf-chip-x" onclick="pfRemoveChip(${i})" title="Remove filter">&#10005;</button></span>`).join('');
+}
+function pfRemoveChip(i) { productFilters.chips.splice(i, 1); prodPage = 0; renderProducts(); }
+
+function pfToggleAddFilter(e) {
+  if (e) e.stopPropagation();
+  pfPop.open = !pfPop.open;
+  if (!pfPop.open) { pfPop.field = null; pfPop.vq = ''; }
+  renderPfPopover();
+  if (pfPop.open) setTimeout(() => document.addEventListener('click', pfClosePop), 0);
+}
+function pfClosePop(e) {
+  const pop = document.getElementById('pf-pop');
+  if (pop && e && pop.contains(e.target)) return;   // clicks inside stay open
+  pfPop.open = false; pfPop.field = null; pfPop.vq = '';
+  renderPfPopover();
+  document.removeEventListener('click', pfClosePop);
+}
+function pfPickField(f) { pfPop.field = f; pfPop.op = 'is'; pfPop.vq = ''; renderPfPopover(); }
+function pfBackField() { pfPop.field = null; pfPop.vq = ''; renderPfPopover(); }
+function pfSetOp(op) { pfPop.op = op; renderPfPopover(); }
+function pfFilterValues(v) { pfPop.vq = v; renderPfPopover(); }
+function pfAddChip(field, value) {
+  productFilters.chips = productFilters.chips || [];
+  if (!productFilters.chips.some(c => c.field === field && c.op === pfPop.op && String(c.value) === String(value)))
+    productFilters.chips.push({field, op: pfPop.op, value});
+  pfPop = {open:false, field:null, op:'is', vq:''};
+  document.removeEventListener('click', pfClosePop);
+  prodPage = 0;
+  renderProducts();
+}
+function renderPfPopover() {
+  const pop = document.getElementById('pf-pop');
+  if (!pop) return;
+  if (!pfPop.open) { pop.classList.remove('open'); pop.innerHTML = ''; return; }
+  pop.classList.add('open');
+  if (!pfPop.field) {
+    pop.innerHTML = '<div class="pf-pop-head">Filter by</div>' +
+      PF_FIELDS.map(f => `<button class="pf-pop-item" onclick="pfPickField('${f.key}')">${esc(f.label)}<span class="pf-pop-arrow">&#8250;</span></button>`).join('');
+    return;
+  }
+  const vq = (pfPop.vq || '').toLowerCase();
+  let vals = pfFieldValues(pfPop.field).filter(Boolean);
+  if (vq) vals = vals.filter(v => String(v).toLowerCase().includes(vq));
+  pop.innerHTML =
+    `<button class="pf-pop-back" onclick="pfBackField()">&#8249; ${esc(pfFieldLabel(pfPop.field))}</button>
+     <div class="pf-pop-ops">
+       <button class="pf-op ${pfPop.op==='is'?'active':''}" onclick="pfSetOp('is')">Is</button>
+       <button class="pf-op ${pfPop.op==='isnot'?'active':''}" onclick="pfSetOp('isnot')">Is not</button>
+     </div>
+     <input class="pf-pop-search" placeholder="Search ${esc(pfFieldLabel(pfPop.field).toLowerCase())}…" value="${esc(pfPop.vq)}" oninput="pfFilterValues(this.value)">
+     <div class="pf-pop-values">${
+       vals.length
+         ? vals.map(v => `<button class="pf-pop-item" data-v="${esc(v)}" onclick="pfAddChip('${pfPop.field}', this.dataset.v)">${esc(v)}</button>`).join('')
+         : '<div class="pf-pop-empty">No matches</div>'
+     }</div>`;
+  const si = pop.querySelector('.pf-pop-search');
+  if (si) { si.focus(); si.setSelectionRange(si.value.length, si.value.length); }
+}
+
+function productRowsHtml(list) {
+  return list.map(p => `
+    <tr>
+      <td style="text-align:center"><input type="checkbox" class="row-select" ${selectedArtnos.has(p.artno)?'checked':''} onchange="toggleRowSelect('${p.artno}',this.checked)"></td>
+      <td>${(p.thumb && /^(https?:\/\/|\/|data:)/.test(p.thumb)) ? '<img class="prod-thumb" src="'+esc(p.thumb)+'" loading="lazy" alt="">' : '<span class="prod-thumb-ph"></span>'}</td>
+      <td class="mono">${p.artno}</td>
+      <td style="max-width:260px"><span class="prod-title-link" onclick="openProductModal('${p.artno}')" title="Click to edit ${esc(p.artno)}">${esc(p.title) || '(untitled)'}</span></td>
+      <td>${esc(p.product_type)}</td>
+      <td>${esc(p.category)}</td>
+      <td>${esc(p.fabric)}</td>
+      <td class="amt">₹${esc(p.wsp||'')}</td>
+      <td>${p.visible ? '<span class="badge badge-green">Live</span>' : '<span class="badge badge-gray">Draft</span>'}</td>
+    </tr>`).join('');
+}
+
+function renderProducts() {
+  document.getElementById('page-title').textContent = 'Products';
+  const filtered = computeFilteredProducts();
+  shownProducts = filtered;
+  prodPage = clampPage(prodPage, filtered.length);
+  const pageItems = pageSlice(filtered, prodPage);
+  const allSelected = filtered.length > 0 && filtered.every(p => selectedArtnos.has(p.artno));
+  const searchIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+  setContent(`
+    ${sessionTabsHtml()}
+    <div class="card">
+      <div class="pf-bar">
+        <div class="pf-tabs">
+          <button class="pf-tab${productFilters.status===''?' active':''}" data-status="" onclick="setProdStatus('')">All</button>
+          <button class="pf-tab${productFilters.status==='live'?' active':''}" data-status="live" onclick="setProdStatus('live')">Live</button>
+          <button class="pf-tab${productFilters.status==='draft'?' active':''}" data-status="draft" onclick="setProdStatus('draft')">Draft</button>
+        </div>
+        <div class="pf-search">
+          ${searchIcon}
+          <input id="prod-search" placeholder="Search products" value="${esc(productFilters.q)}" oninput="productFilters.q=this.value;applyProductFilters()">
+        </div>
+        <div class="pf-addwrap">
+          <button class="pf-add-btn" onclick="pfToggleAddFilter(event)" title="Add a Category, Type, Fabric or Collection filter">&#43; Add filter</button>
+          <div class="pf-pop" id="pf-pop" onclick="event.stopPropagation()"></div>
+        </div>
+        <span class="pf-count"><span id="prod-count">${filtered.length}</span> shown</span>
+        <button class="pf-clear" id="pf-clear" onclick="clearProdFilters()" style="display:${prodAnyFilter()?'inline':'none'}">Clear filters</button>
+      </div>
+      <div class="pf-chips" id="pf-chips">${pfChipsHtml()}</div>
+      <table id="prod-table">
+        <thead><tr>
+          <th style="width:34px;text-align:center"><input type="checkbox" id="prod-select-all" ${allSelected?'checked':''} onchange="toggleSelectAll(this.checked)" title="Select all shown"></th>
+          <th style="width:44px">Image</th>
+          <th class="th-sort" data-sort="artno" onclick="setProdSort('artno')" title="Sort by Art No">Art No <span class="sort-ind dim">⇅</span></th>
+          <th class="th-sort" data-sort="title" onclick="setProdSort('title')" title="Sort by Title">Title <span class="sort-ind dim">⇅</span></th>
+          <th class="th-sort" data-sort="product_type" onclick="setProdSort('product_type')" title="Sort by Type">Type <span class="sort-ind dim">⇅</span></th>
+          <th class="th-sort" data-sort="category" onclick="setProdSort('category')" title="Sort by Category">Category <span class="sort-ind dim">⇅</span></th>
+          <th class="th-sort" data-sort="fabric" onclick="setProdSort('fabric')" title="Sort by Fabric">Fabric <span class="sort-ind dim">⇅</span></th>
+          <th class="th-sort" data-sort="wsp" onclick="setProdSort('wsp')" title="Sort by W.S.P.">WSP <span class="sort-ind dim">⇅</span></th>
+          <th class="th-sort" data-sort="status" onclick="setProdSort('status')" title="Sort by Status">Status <span class="sort-ind dim">⇅</span></th>
+        </tr></thead>
+        <tbody id="prod-tbody">${productRowsHtml(pageItems)||'<tr class="empty-row"><td colspan="9">No products</td></tr>'}</tbody>
+      </table>
+      <div id="prod-pager">${pagerHtml(filtered.length, prodPage, 'prodGoPage')}</div>
+    </div>
+  `);
+  // Action buttons live in the topbar (next to the page title) instead of a card header.
+  // Set AFTER setContent so it isn't wiped by setContent's topbar reset.
+  const tr = document.getElementById('topbar-right');
+  if (tr) tr.innerHTML = `
+    <div class="topbar-actions">
+      <button class="btn btn-secondary btn-sm" id="bulk-edit-btn" onclick="openBulkEdit()" title="Edit the selected products at once in a grid" style="display:${selectedArtnos.size?'inline-flex':'none'}">&#9998; ${bulkEditLabel()}</button>
+      <button class="btn btn-secondary btn-sm" id="bulk-import-btn" onclick="openBulkImport()" title="Import products from an Excel file into this session">&#8593; Bulk Import (Excel)</button>
+      <button class="btn btn-primary btn-sm" onclick="openProductModal()">+ Add Product</button>
+      <div class="menu-wrap">
+        <button class="btn btn-secondary btn-sm icon-btn" onclick="toggleActionMenu(event)" title="Set selected products Live or Draft" aria-label="Status actions">&#9776;</button>
+        <div class="action-menu" id="action-menu" onclick="event.stopPropagation()">
+          <div class="action-menu-label">Selected (<span id="am-sel-count">0</span>)</div>
+          <button class="action-menu-item" onclick="bulkSetActive(1)"><span style="color:var(--green)">&#9679;</span> Make Live (active)</button>
+          <button class="action-menu-item" onclick="bulkSetActive(0)"><span style="color:var(--gray)">&#9675;</span> Make Draft (inactive)</button>
+          <div class="action-menu-sep"></div>
+          <button class="action-menu-item" onclick="bulkAddTag()"><span style="color:var(--green)">&#127991;</span> Add tags</button>
+          <button class="action-menu-item" onclick="bulkRemoveTag()"><span style="color:var(--gray)">&#127991;</span> Remove tags</button>
+        </div>
+      </div>
+    </div>`;
+  updateSortIndicators();   // reflect the active sort column/arrow in the freshly-rendered header
+}
+
+// A filter/search/sort change resets to page 1; paging keeps the page.
+function applyProductFilters() { prodPage = 0; _renderProdPage(); }
+function prodGoPage(p) { prodPage = clampPage(p, shownProducts.length); _renderProdPage(); _scrollListTop(); }
+
+// Live-update the table body + counters + pager so the search box keeps focus while typing.
+function _renderProdPage() {
+  const filtered = computeFilteredProducts();
+  shownProducts = filtered;
+  prodPage = clampPage(prodPage, filtered.length);
+  const pageItems = pageSlice(filtered, prodPage);
+  const tb = document.getElementById('prod-tbody');
+  if (tb) tb.innerHTML = productRowsHtml(pageItems) || '<tr class="empty-row"><td colspan="9">No products match</td></tr>';
+  const cnt = document.getElementById('prod-count');
+  if (cnt) cnt.textContent = filtered.length;
+  const sa = document.getElementById('prod-select-all');
+  if (sa) sa.checked = filtered.length > 0 && filtered.every(p => selectedArtnos.has(p.artno));
+  document.querySelectorAll('.pf-tab').forEach(b => b.classList.toggle('active', (b.dataset.status||'') === (productFilters.status||'')));
+  const clr = document.getElementById('pf-clear');
+  if (clr) clr.style.display = prodAnyFilter() ? 'inline' : 'none';
+  const pg = document.getElementById('prod-pager');
+  if (pg) pg.innerHTML = pagerHtml(filtered.length, prodPage, 'prodGoPage');
+  updateSortIndicators();
+}
+
+function setProdStatus(s) { productFilters.status = s; applyProductFilters(); }
+function clearProdFilters() {
+  productFilters = {q:'', status:'', chips:[]};
+  pfPop = {open:false, field:null, op:'is', vq:''};
+  prodPage = 0;
+  renderProducts();
+}
+
+function bulkEditLabel() {
+  return 'Bulk Edit' + (selectedArtnos.size ? ' (' + selectedArtnos.size + ')' : '');
+}
+
+function toggleRowSelect(artno, checked) {
+  if (checked) selectedArtnos.add(artno); else selectedArtnos.delete(artno);
+  const b = document.getElementById('bulk-edit-btn');
+  if (b) {
+    b.style.display = selectedArtnos.size ? 'inline-flex' : 'none';
+    b.innerHTML = '&#9998; ' + bulkEditLabel();
+  }
+  updateActionMenuCount();
+}
+
+// ── Top-right actions menu (hamburger) ────────────────────────────────────
+function toggleActionMenu(e) {
+  if (e) e.stopPropagation();
+  const m = document.getElementById('action-menu');
+  if (!m) return;
+  const open = !m.classList.contains('open');
+  m.classList.toggle('open', open);
+  if (open) {
+    updateActionMenuCount();
+    setTimeout(function(){ document.addEventListener('click', closeActionMenu); }, 0);
+  } else {
+    document.removeEventListener('click', closeActionMenu);
+  }
+}
+function closeActionMenu() {
+  const m = document.getElementById('action-menu');
+  if (m) m.classList.remove('open');
+  document.removeEventListener('click', closeActionMenu);
+}
+function updateActionMenuCount() {
+  const el = document.getElementById('am-sel-count');
+  if (el) el.textContent = selectedArtnos.size;
+}
+
+// Quick action: set the selected products Live (active) or Draft (inactive).
+async function bulkSetActive(active) {
+  closeActionMenu();
+  const artnos = [...selectedArtnos];
+  if (!artnos.length) { toast('Select one or more products first'); return; }
+  const label = active ? 'Live' : 'Draft';
+  try {
+    await Promise.all(artnos.map(function(a){
+      return api('POST', '/api/admin/products/' + encodeURIComponent(a) +
+                 '/update?session_id=' + activeSessionId, { visible: active ? 1 : 0 });
+    }));
+    selectedArtnos.clear();
+    toast(artnos.length + ' product(s) set to ' + label);
+    await loadProducts();
+  } catch (e) {
+    toast('Error: ' + e.message);
+  }
+}
+
+// ── Bulk tags (Shopify-style modal: pick existing or create new) ───────────
+function _splitTags(s) { return String(s || '').split(',').map(t => t.trim()).filter(Boolean); }
+function _joinTags(arr) { return arr.join(', '); }
+function _allDistinctTags() { return _uniqSorted(allProducts.flatMap(p => _splitTags(p.tags))); }
+function _selectedProductsTags() {
+  return _uniqSorted([...selectedArtnos].flatMap(a => _splitTags((allProducts.find(x => x.artno === a) || {}).tags)));
+}
+
+let tagModal = { mode: 'add', query: '', selected: new Set(), created: [] };
+
+function bulkAddTag()    { openTagModal('add'); }
+function bulkRemoveTag() { openTagModal('remove'); }
+
+function openTagModal(mode) {
+  closeActionMenu();
+  if (!selectedArtnos.size) { toast('Select one or more products first'); return; }
+  tagModal = { mode, query: '', selected: new Set(), created: [] };
+  document.getElementById('tag-modal-title').textContent =
+    (mode === 'add' ? 'Add tags to ' : 'Remove tags from ') + selectedArtnos.size + ' product(s)';
+  const si = document.getElementById('tag-modal-search');
+  if (si) { si.value = ''; si.placeholder = mode === 'add' ? 'Search to find or create tags' : 'Search tags to remove'; }
+  renderTagList();
+  document.getElementById('tag-modal').classList.add('open');
+  if (si) setTimeout(() => si.focus(), 30);
+}
+function closeTagModal() { document.getElementById('tag-modal').classList.remove('open'); }
+
+function tagModalAvailable() {
+  let base = (tagModal.mode === 'add') ? _allDistinctTags() : _selectedProductsTags();
+  if (tagModal.mode === 'add' && tagModal.created.length) {
+    const lower = base.map(t => t.toLowerCase());
+    tagModal.created.forEach(t => { if (!lower.includes(t.toLowerCase())) base.push(t); });
+    base = _uniqSorted(base);
+  }
+  return base;
+}
+function renderTagList() {
+  const list = document.getElementById('tag-modal-list');
+  if (!list) return;
+  const q = (tagModal.query || '').trim();
+  const ql = q.toLowerCase();
+  const avail = tagModalAvailable();
+  const shown = ql ? avail.filter(t => t.toLowerCase().includes(ql)) : avail;
+  let html = '';
+  if (tagModal.mode === 'add' && q && !avail.some(t => t.toLowerCase() === ql)) {
+    html += `<button class="tag-create" onclick="tagCreateFromQuery()">&#43; Create <strong>${esc(q)}</strong></button>`;
+  }
+  if (shown.length) {
+    html += `<div class="tag-list-head">${tagModal.mode === 'add' ? 'Available' : 'Tags on selected products'}</div>`;
+    html += shown.map(t =>
+      `<label class="tag-row"><input type="checkbox" data-tag="${esc(t)}" ${tagModal.selected.has(t) ? 'checked' : ''} onchange="tagToggle(this)"><span>${esc(t)}</span></label>`
+    ).join('');
+  } else if (!(tagModal.mode === 'add' && q)) {
+    html += `<div class="tag-empty">${tagModal.mode === 'add' ? 'No tags yet — type above to create one.' : 'The selected products have no tags.'}</div>`;
+  }
+  list.innerHTML = html;
+}
+function tagToggle(el) {
+  const t = el.dataset.tag;
+  if (el.checked) tagModal.selected.add(t); else tagModal.selected.delete(t);
+}
+function tagCreateFromQuery() {
+  const t = (tagModal.query || '').trim();
+  if (!t) return;
+  if (!tagModalAvailable().some(x => x.toLowerCase() === t.toLowerCase())) tagModal.created.push(t);
+  tagModal.selected.add(t);
+  tagModal.query = '';
+  const si = document.getElementById('tag-modal-search'); if (si) si.value = '';
+  renderTagList();
+}
+function tagSearchKey(e) {
+  if (e.key === 'Enter' && tagModal.mode === 'add') {
+    e.preventDefault();
+    const q = (tagModal.query || '').trim();
+    if (q && !tagModalAvailable().some(t => t.toLowerCase() === q.toLowerCase())) tagCreateFromQuery();
+  }
+}
+async function tagModalSave() {
+  const tags = [...tagModal.selected];
+  if (!tags.length) { toast(tagModal.mode === 'add' ? 'Select or create at least one tag' : 'Select at least one tag to remove'); return; }
+  const artnos = [...selectedArtnos];
+  closeTagModal();
+  try {
+    let n = 0;
+    await Promise.all(artnos.map(a => {
+      const p = allProducts.find(x => x.artno === a);
+      const cur = _splitTags(p && p.tags);
+      let next = cur.slice(), changed = false;
+      if (tagModal.mode === 'add') {
+        const lower = cur.map(t => t.toLowerCase());
+        tags.forEach(t => { if (!lower.includes(t.toLowerCase())) { next.push(t); lower.push(t.toLowerCase()); changed = true; } });
+      } else {
+        const rm = tags.map(t => t.toLowerCase());
+        const kept = cur.filter(t => !rm.includes(t.toLowerCase()));
+        if (kept.length !== cur.length) { next = kept; changed = true; }
+      }
+      if (!changed) return Promise.resolve();
+      n++;
+      return api('POST', '/api/admin/products/' + encodeURIComponent(a) + '/update?session_id=' + activeSessionId, { tags: _joinTags(next) });
+    }));
+    toast((tagModal.mode === 'add' ? 'Tag(s) added to ' : 'Tag(s) removed from ') + n + ' product(s)');
+    await loadProducts();
+  } catch (e) { toast('Error: ' + e.message); }
+}
+
+function toggleSelectAll(checked) {
+  shownProducts.forEach(p => checked ? selectedArtnos.add(p.artno) : selectedArtnos.delete(p.artno));
+  _renderProdPage();          // refresh row checkboxes without changing the page
+  const b = document.getElementById('bulk-edit-btn');
+  if (b) { b.style.display = selectedArtnos.size ? 'inline-flex' : 'none'; b.innerHTML = '&#9998; ' + bulkEditLabel(); }
+  updateActionMenuCount();
+}
+
+// ── BULK EDIT — full-page Shopify-style grid (product rows expand to per-size prices) ──
+
+// Optional columns can be hidden via the "Columns" menu. Title + Base price always show.
+// Product-level editable columns in the bulk grid — same fields as the catalogue Excel.
+const BE_COLS = [
+  { k:'producttype', field:'product_type',  label:'Product Type' },
+  { k:'category',    field:'category',       label:'Category' },
+  { k:'fabric',      field:'fabric',         label:'Fabric' },
+  { k:'fit',         field:'fit_type',       label:'Fit Type' },
+  { k:'lycra',       field:'key_features',   label:'Lycra' },
+  { k:'color',       field:'color_pattern',  label:'Colour' },
+  { k:'tags',        field:'tags',           label:'Tags' },
+];
+const BULK_OPTIONAL_COLS = [
+  { k:'producttype', label:'Product Type' },
+  { k:'category',    label:'Category' },
+  { k:'fabric',      label:'Fabric' },
+  { k:'fit',         label:'Fit Type' },
+  { k:'lycra',       label:'Lycra' },
+  { k:'color',       label:'Colour' },
+  { k:'tags',        label:'Tags' },
+  { k:'status',      label:'Status' },
+  { k:'mrp',         label:'M.R.P.' },
+];
+
+function openBulkEdit() {
+  let target = allProducts.filter(p => selectedArtnos.has(p.artno));
+  if (!target.length) target = shownProducts.length ? shownProducts : allProducts;
+  if (!target.length) { toast('No products to edit'); return; }
+  renderBulkEdit(target);
+}
+
+function renderBulkEdit(list) {
+  const sess = activeSession();
+  document.getElementById('page-title').textContent = 'Bulk Edit';
+  const startExpanded = false;   // products start collapsed — expand (▸) to edit per-size prices
+  const fillBtn = f => `<button type="button" class="be-fill" onclick="beFillFromHeader('${f}')" title="Fill this column down all rows (uses the focused cell, or the top one)">&#11015; fill</button>`;
+  const head = `
+    <th class="bcol-title">Product title</th>
+    ${BE_COLS.map(c => `<th class="bcol-${c.k}">${c.label} ${fillBtn(c.field)}</th>`).join('')}
+    <th class="bcol-status">Status ${fillBtn('status')}</th>
+    <th class="bcol-wsp be-num-h">W.S.P. ₹ ${fillBtn('price')}</th>
+    <th class="bcol-mrp be-num-h">M.R.P. ₹ ${fillBtn('compare')}</th>`;
+
+  const body = list.map((p, i) => {
+    const variants = (p.variants && p.variants.length) ? p.variants
+                   : (p.sizes || []).map(s => ({ size:s, price:p.wsp||'', compare_at:p.mrp||'' }));
+    const thumb = p.thumb
+      ? `<img class="be-thumb" src="${esc(p.thumb)}" alt="" onerror="this.style.visibility='hidden'">`
+      : '<span class="be-thumb-ph"></span>';
+    const pcells = BE_COLS.map(c =>
+      `<td class="bcol-${c.k}"><input class="be-input" data-artno="${esc(p.artno)}" data-level="product" data-field="${c.field}" data-orig="${esc(p[c.field]||'')}" value="${esc(p[c.field]||'')}"></td>`).join('');
+    const prow = `
+      <tr class="be-prow" data-pi="${i}">
+        <td class="bcol-title">
+          <div class="be-title-cell">
+            <button class="be-chev" onclick="toggleBulkRow(${i})" title="Show sizes">&#9656;</button>
+            ${thumb}
+            <input class="be-input" data-artno="${esc(p.artno)}" data-level="product" data-field="title"
+                   data-orig="${esc(p.title||'')}" value="${esc(p.title||'')}" title="${esc(p.artno)}">
+          </div>
+        </td>
+        ${pcells}
+        <td class="bcol-status">
+          <select class="be-input" data-artno="${esc(p.artno)}" data-level="product" data-field="status" data-orig="${p.visible?'active':'draft'}">
+            <option value="active" ${p.visible?'selected':''}>Visible</option>
+            <option value="draft" ${p.visible?'':'selected'}>Hidden</option>
+          </select>
+        </td>
+        <td class="bcol-wsp be-muted">&mdash;</td>
+        <td class="bcol-mrp be-muted">&mdash;</td>
+      </tr>`;
+    const vmid = BE_COLS.map(c => `<td class="bcol-${c.k} be-muted"></td>`).join('');
+    const vrows = variants.map(v => `
+      <tr class="be-vrow be-vrow-${i}" style="display:none">
+        <td class="bcol-title be-vtitle">${esc(v.size||'')}</td>
+        ${vmid}
+        <td class="bcol-status be-muted"></td>
+        <td class="bcol-wsp"><input class="be-vinput be-num" data-artno="${esc(p.artno)}" data-size="${esc(v.size||'')}" data-field="price"   data-orig="${esc(v.price||'')}"      value="${esc(v.price||'')}"></td>
+        <td class="bcol-mrp"><input class="be-vinput be-num" data-artno="${esc(p.artno)}" data-size="${esc(v.size||'')}" data-field="compare" data-orig="${esc(v.compare_at||'')}" value="${esc(v.compare_at||'')}"></td>
+      </tr>`).join('');
+    return prow + vrows;
+  }).join('');
+
+  const colMenu = BULK_OPTIONAL_COLS.map(c =>
+    `<label><input type="checkbox" checked onchange="toggleBulkCol('${c.k}',this.checked)"> ${c.label}</label>`).join('');
+
+  setContent(`
+    <div class="form-page-head">
+      <button class="set-back" onclick="loadProducts()">&#8592; Products</button>
+      <div style="flex:1;min-width:0">
+        <h2 style="font-size:17px;font-weight:700">Editing ${list.length} product${list.length===1?'':'s'}</h2>
+        <div style="font-size:12px;color:var(--gray)">in session ${sess?esc(sess.name):''} — rows start collapsed; click ▸ to expand a product. <strong>Fill a whole column:</strong> click <strong>⬇ fill</strong> in a header, or focus a cell and press <strong>Ctrl+D</strong>; or paste a column copied from Excel to fill many rows. Use <strong>Columns</strong> to show/hide fields.</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="toggleBulkAll(true)" title="Expand all">Expand all</button>
+      <button class="btn btn-secondary btn-sm" onclick="toggleBulkAll(false)" title="Collapse all">Collapse</button>
+      <div class="be-colmenu-wrap">
+        <button class="btn btn-secondary btn-sm" onclick="toggleColMenu(event)">&#9636; Columns</button>
+        <div class="be-colmenu" id="be-colmenu" style="display:none">${colMenu}</div>
+      </div>
+      <button class="btn btn-primary btn-sm" id="be-save" onclick="saveBulkEdit()">Save</button>
+    </div>
+    <div class="card" style="padding:0">
+      <div class="be-wrap">
+        <table class="be-table be-grid">
+          <thead><tr>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+      <div id="be-progress" style="display:none;padding:12px 16px;font-size:13px;color:var(--gray)"></div>
+    </div>
+  `);
+
+  document.querySelectorAll('.be-input,.be-vinput').forEach(el => {
+    const evt = el.tagName === 'SELECT' ? 'change' : 'input';
+    el.addEventListener(evt, () => el.classList.toggle('changed', el.value !== el.dataset.orig));
+  });
+
+  // Excel-like editing: track focus, Ctrl+D fill-down, and paste-a-column.
+  const grid = document.querySelector('.be-grid');
+  if (grid) {
+    grid.addEventListener('focusin', e => {
+      const t = e.target;
+      if (t && (t.classList.contains('be-input') || t.classList.contains('be-vinput'))) beLastFocused = t;
+    });
+    grid.addEventListener('keydown', beGridKeydown);
+    grid.addEventListener('paste', beGridPaste);
+  }
+}
+
+// ── Bulk grid: spreadsheet-style fill / paste ─────────────────────────────
+let beLastFocused = null;
+function beMarkChanged(el) { el.classList.toggle('changed', el.value !== el.dataset.orig); }
+function beColInputs(field) {
+  return (field === 'price' || field === 'compare')
+    ? [...document.querySelectorAll('.be-vinput[data-field="' + field + '"]')]
+    : [...document.querySelectorAll('.be-prow .be-input[data-field="' + field + '"]')];
+}
+function beFillColumn(field, value) {
+  const inputs = beColInputs(field);
+  inputs.forEach(el => { el.value = value; beMarkChanged(el); });
+  toast('Filled ' + inputs.length + ' row' + (inputs.length === 1 ? '' : 's') + ' with "' + value + '"');
+}
+function beFillFromHeader(field) {
+  const inputs = beColInputs(field);
+  if (!inputs.length) { toast('Nothing to fill'); return; }
+  const src = (beLastFocused && beLastFocused.dataset && beLastFocused.dataset.field === field)
+    ? beLastFocused.value : inputs[0].value;
+  beFillColumn(field, src);
+}
+function beGridKeydown(e) {
+  // Ctrl/Cmd+D = fill the focused cell's value down the whole column (Excel "fill down").
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'd' || e.key === 'D')) {
+    const el = e.target;
+    if (el && el.dataset && el.dataset.field &&
+        (el.classList.contains('be-input') || el.classList.contains('be-vinput'))) {
+      e.preventDefault();
+      beFillColumn(el.dataset.field, el.value);
+    }
+  }
+}
+function beGridPaste(e) {
+  // Pasting a multi-line value (a column copied from Excel) fills consecutive rows.
+  const el = e.target;
+  if (!el || !el.dataset || !el.dataset.field) return;
+  if (!(el.classList.contains('be-input') || el.classList.contains('be-vinput'))) return;
+  const cd = e.clipboardData || window.clipboardData;
+  const text = cd ? cd.getData('text') : '';
+  if (!text || text.indexOf('\n') < 0) return;   // single value → normal browser paste
+  e.preventDefault();
+  const lines = text.replace(/\r/g, '').split('\n');
+  if (lines.length && lines[lines.length - 1] === '') lines.pop();
+  const inputs = beColInputs(el.dataset.field);
+  const start = inputs.indexOf(el);
+  if (start < 0) return;
+  let n = 0;
+  lines.forEach((line, k) => { const t = inputs[start + k]; if (t) { t.value = line; beMarkChanged(t); n++; } });
+  toast('Pasted ' + n + ' value' + (n === 1 ? '' : 's') + ' down the column');
+}
+
+function toggleBulkRow(i) {
+  const rows = document.querySelectorAll('.be-vrow-' + i);
+  if (!rows.length) return;
+  const open = rows[0].style.display !== 'none';
+  rows.forEach(r => r.style.display = open ? 'none' : '');
+  const chev = document.querySelector('.be-prow[data-pi="' + i + '"] .be-chev');
+  if (chev) chev.classList.toggle('open', !open);
+}
+
+function toggleBulkAll(expand) {
+  document.querySelectorAll('.be-vrow').forEach(r => r.style.display = expand ? '' : 'none');
+  document.querySelectorAll('.be-chev').forEach(c => c.classList.toggle('open', expand));
+}
+
+function toggleBulkCol(k, show) {
+  document.querySelectorAll('.bcol-' + k).forEach(el => el.style.display = show ? '' : 'none');
+}
+
+function toggleColMenu(e) {
+  if (e) e.stopPropagation();
+  const m = document.getElementById('be-colmenu');
+  if (!m) return;
+  const showing = m.style.display !== 'none';
+  m.style.display = showing ? 'none' : 'block';
+  if (!showing) {
+    const close = () => { m.style.display = 'none'; document.removeEventListener('click', close); };
+    setTimeout(() => document.addEventListener('click', close), 0);
+  }
+}
+
+async function saveBulkEdit() {
+  const byArt = {};
+  const ent = a => byArt[a] || (byArt[a] = { fields:{}, variantsChanged:false });
+
+  // product-level fields (title, category, fabric, status→visible)
+  document.querySelectorAll('.be-input').forEach(el => {
+    if (el.value === el.dataset.orig) return;
+    const e = ent(el.dataset.artno);
+    if (el.dataset.field === 'status') e.fields.visible = (el.value === 'active') ? 1 : 0;
+    else e.fields[el.dataset.field] = el.value.trim();
+  });
+  // per-size price changes → mark product for a full variants rebuild
+  document.querySelectorAll('.be-vinput').forEach(el => {
+    if (el.value !== el.dataset.orig) ent(el.dataset.artno).variantsChanged = true;
+  });
+
+  const artnos = Object.keys(byArt);
+  if (!artnos.length) { toast('No changes to save'); return; }
+
+  const saveBtn = document.getElementById('be-save');
+  const prog = document.getElementById('be-progress');
+  saveBtn.disabled = true;
+  prog.style.display = 'block';
+
+  let done = 0, failed = 0;
+  for (const a of artnos) {
+    const e = byArt[a];
+    const payload = Object.assign({}, e.fields);
+    if (e.variantsChanged) {
+      const vars = collectBulkVariants(a);          // all sizes (changed + unchanged)
+      payload.variants = vars;
+      payload.wsp = vars[0] ? vars[0].price : '';
+      payload.mrp = vars[0] ? vars[0].compare_at : '';
+    }
+    try {
+      const r = await api('POST', `/api/admin/products/${encodeURIComponent(a)}/update?session_id=${activeSessionId}`, payload);
+      (r && r.success === false) ? failed++ : done++;
+    } catch (err) { failed++; }
+    prog.textContent = `Saving… ${done + failed}/${artnos.length}`;
+  }
+  toast(`Saved ${done} product${done===1?'':'s'}` + (failed ? `, ${failed} failed` : ''));
+  selectedArtnos.clear();
+  loadProducts();
+}
+
+// Rebuild a product's full variant list from its per-size inputs in the grid.
+function collectBulkVariants(artno) {
+  const map = {};
+  document.querySelectorAll('.be-vinput').forEach(el => {
+    if (el.dataset.artno !== artno) return;
+    const sz = el.dataset.size;
+    const v = map[sz] || (map[sz] = { sku: artno + '-' + sz, size: sz, price:'', compare_at:'' });
+    if (el.dataset.field === 'price') v.price = el.value.trim();
+    else v.compare_at = el.value.trim();
+  });
+  return Object.keys(map)
+    .sort((a, b) => SIZE_ORDER.indexOf(a) - SIZE_ORDER.indexOf(b))
+    .map(s => map[s]);
+}
+
+// ── BULK IMPORT (Excel) ────────────────────────────────────────────────────
+// The admin panel is the single source of truth; uploading the catalogue Excel
+// is the main way product data is updated.
+function openBulkImport() {
+  const sess = activeSession();
+  document.getElementById('bi-session').textContent = sess ? sess.name : '—';
+  const inp = document.getElementById('bulk-excel-input'); if (inp) inp.value = '';
+  biStatus('', '');
+  document.getElementById('bulk-import-modal').classList.add('open');
+}
+function closeBulkImport() {
+  document.getElementById('bulk-import-modal').classList.remove('open');
+}
+function biDrop(e) {
+  e.preventDefault();
+  const dz = document.getElementById('bi-drop');
+  if (dz) dz.classList.remove('over');
+  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) bulkImportExcel(f);
+}
+function biStatus(kind, msg) {
+  const st = document.getElementById('bi-status');
+  if (!st) return;
+  st.className = 'bi-status' + (kind ? ' ' + kind : '');
+  st.textContent = msg || '';
+}
+
+async function bulkImportExcel(file) {
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith('.xlsx')) {
+    biStatus('err', 'Only .xlsx files are supported.');
+    return;
+  }
+  biStatus('busy', 'Uploading & importing "' + file.name + '"…');
+  const form = new FormData();
+  form.append('excel_file', file);
+  try {
+    const resp = await fetch('/api/admin/upload-excel?session_id=' + activeSessionId, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + TOKEN },
+      body: form
+    });
+    const data = await resp.json();
+    if (data.success) {
+      biStatus('ok', '✓ ' + (data.message || 'Imported') + '. Refreshing…');
+      toast('✓ ' + (data.message || 'Catalogue imported'));
+      setTimeout(function(){ closeBulkImport(); loadProducts(); }, 800);
+    } else {
+      biStatus('err', 'Import failed: ' + (data.error || 'unknown error'));
+    }
+  } catch (e) {
+    biStatus('err', 'Server error: ' + e.message);
+  }
+  const inp = document.getElementById('bulk-excel-input'); if (inp) inp.value = '';
+}
+
+async function toggleVisibility(artno, checkbox) {
+  const data = await api('POST', `/api/admin/products/${encodeURIComponent(artno)}/toggle?session_id=${activeSessionId}`);
+  if (!data.success) {
+    checkbox.checked = !checkbox.checked;
+    toast('Error toggling visibility');
+    return;
+  }
+  const p = allProducts.find(x => x.artno === artno);
+  if (p) p.visible = data.visible ? 1 : 0;
+  toast(data.visible ? artno + ' is now Visible' : artno + ' is now Hidden');
+}
+
+// ── PRODUCT CREATE / EDIT MODAL ───────────────────────────────────────────
+
+const SIZE_ORDER = ['S','M','L','XL','2XL','3XL','4XL','5XL'];
+let editingArtno = null;   // null = creating a new product
+
+function _uniqSorted(arr) {
+  return [...new Set(arr.filter(Boolean))].sort();
+}
+
+// Group a product's per-size variants back into price bands (sizes sharing WSP/MRP)
+function variantsToBands(variants) {
+  const bands = [];
+  (variants || []).forEach(v => {
+    const key = (v.price||'') + '|' + (v.compare_at||'');
+    let band = bands.find(b => b.key === key);
+    if (!band) { band = {key, price:v.price||'', compare_at:v.compare_at||'', sizes:[]}; bands.push(band); }
+    if (v.size && !band.sizes.includes(v.size)) band.sizes.push(v.size);
+  });
+  return bands.length ? bands : [{price:'', compare_at:'', sizes:[]}];
+}
+
+function bandRowHtml(band) {
+  const chips = SIZE_ORDER.map(sz =>
+    `<label class="size-chip"><input type="checkbox" value="${sz}" ${(band.sizes||[]).includes(sz)?'checked':''}>${sz}</label>`
+  ).join('');
+  return `<div class="band-row">
+    <label style="font-size:12px;font-weight:600;color:#444;display:block;margin-bottom:7px">Sizes in this price band</label>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px">${chips}</div>
+    <div class="form-row" style="margin-bottom:0;align-items:flex-end">
+      <div class="fg"><label>WSP (₹)</label><input class="b-wsp" type="text" value="${esc(band.price||'')}" placeholder="650"></div>
+      <div class="fg"><label>MRP (₹)</label><input class="b-mrp" type="text" value="${esc(band.compare_at||'')}" placeholder="1040"></div>
+      <div class="fg" style="flex:0 0 auto"><button class="btn btn-secondary btn-sm" type="button" onclick="this.closest('.band-row').remove()">Remove band</button></div>
+    </div>
+  </div>`;
+}
+
+// Add / edit a product on its own full page (not a modal).
+function openProductModal(artno) {
+  editingArtno = artno || null;
+  const isEdit = !!artno;
+  const p = isEdit ? (allProducts.find(x => x.artno === artno) || {}) : {};
+  const sess = activeSession();
+  const visible = isEdit ? !!p.visible : true;
+  const heading = isEdit ? 'Edit Product · ' + esc(artno) : 'Add New Product';
+  document.getElementById('page-title').textContent = isEdit ? 'Edit Product' : 'Add Product';
+
+  setContent(`
+    <div class="form-page-head">
+      <button class="set-back" onclick="closeProductModal()">&#8592; Products</button>
+      <div style="flex:1;min-width:0">
+        <h2 style="font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${heading}</h2>
+        <div style="font-size:12px;color:var(--gray)">${sess ? 'in session ' + esc(sess.name) : ''}</div>
+      </div>
+      ${isEdit ? '<button class="btn btn-danger btn-sm" onclick="deleteProduct()">Delete</button>' : ''}
+      <button class="btn btn-secondary btn-sm" onclick="closeProductModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="pm-save" onclick="saveProduct()">${isEdit ? 'Save Changes' : 'Create Product'}</button>
+    </div>
+    <div class="card">
+      <div class="modal-body" id="pm-body">
+        <div class="section-title">Product Details</div>
+        <div class="form-row">
+          <div class="fg" style="flex:0 0 200px"><label>Art No ${isEdit?'':'<span style="color:var(--red)">*</span>'}</label>
+            <input id="pf-artno" value="${esc(p.artno||'')}" placeholder="e.g. 4189FP" ${isEdit?'readonly style="background:#f4f5f7;cursor:not-allowed"':''}></div>
+          <div class="fg"><label>Title / Description</label>
+            <input id="pf-title" value="${esc(p.title||'')}" placeholder="WINTER BASIC LOWER WITH 1 SIDE ZIP"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Product Type</label><input id="pf-producttype" list="dl-producttypes" value="${esc(p.product_type||'')}" placeholder="e.g. LOWER"></div>
+          <div class="fg"><label>Category</label><input id="pf-category" list="dl-categories" value="${esc(p.category||'')}" placeholder="BASIC LOWER"></div>
+          <div class="fg"><label>Season</label><input id="pf-season" value="${esc(p.season||"W'25")}" placeholder="W'25"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Fabric</label><input id="pf-fabric" list="dl-fabrics" value="${esc(p.fabric||'')}" placeholder="3T FLEECE"></div>
+          <div class="fg"><label>Fit Type</label><input id="pf-fit" value="${esc(p.fit_type||'')}" placeholder="REGULAR FIT"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Colour / Pattern</label><input id="pf-colorpat" value="${esc(p.color_pattern||'')}" placeholder="AS PER SHADE CARD"></div>
+          <div class="fg" style="flex:0 0 130px"><label>No. of Colours</label><input id="pf-colorcount" type="number" min="0" value="${esc(p.color_count||0)}"></div>
+          <div class="fg"><label>Lycra</label><input id="pf-keyfeat" value="${esc(p.key_features||'')}" placeholder="LYCRA"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Tags</label><input id="pf-tags" value="${esc(p.tags||'')}" placeholder="W'25, Full Sleeve, BASIC LOWER"></div>
+        </div>
+
+        <div class="section-title" style="margin-top:18px">Sizes &amp; Pricing</div>
+        <p style="font-size:12px;color:var(--gray);margin-bottom:12px">Tick the sizes that share a price, then enter the WSP/MRP for that band. Add a second band for larger sizes priced differently (e.g. 4XL–5XL).</p>
+        <div id="pm-bands"></div>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="addBand()" style="margin-bottom:4px">+ Add price band</button>
+
+        <div class="section-title" style="margin-top:18px">Display</div>
+        <div class="form-row" style="align-items:center">
+          <div class="fg" style="flex:0 0 140px"><label>Sort Order</label><input id="pf-sort" type="number" value="${esc(isEdit ? (p.sort_order||0) : '')}" placeholder="auto"></div>
+          <div class="fg" style="flex:0 0 auto"><label>Visible in catalogue</label>
+            <label class="toggle" style="margin-top:4px"><input type="checkbox" id="pf-visible" ${visible?'checked':''}><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+  `);
+
+  // populate datalists for quick entry
+  document.getElementById('dl-categories').innerHTML =
+    _uniqSorted(allProducts.map(x => x.category)).map(c => `<option value="${esc(c)}">`).join('');
+  document.getElementById('dl-fabrics').innerHTML =
+    _uniqSorted(allProducts.map(x => x.fabric)).map(c => `<option value="${esc(c)}">`).join('');
+  document.getElementById('dl-producttypes').innerHTML =
+    _uniqSorted(allProducts.map(x => x.product_type)).map(c => `<option value="${esc(c)}">`).join('');
+
+  const bands = variantsToBands(p.variants);
+  document.getElementById('pm-bands').innerHTML = bands.map(bandRowHtml).join('');
+}
+
+// Back / cancel from the product form → return to the products list.
+function closeProductModal() {
+  editingArtno = null;
+  loadProducts();
+}
+
+function addBand() {
+  document.getElementById('pm-bands').insertAdjacentHTML('beforeend',
+    bandRowHtml({price:'', compare_at:'', sizes:[]}));
+}
+
+function _val(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+function collectVariants(artno) {
+  const out = [];
+  const seen = new Set();
+  document.querySelectorAll('#pm-bands .band-row').forEach(row => {
+    const wsp = row.querySelector('.b-wsp').value.trim();
+    const mrp = row.querySelector('.b-mrp').value.trim();
+    row.querySelectorAll('input[type=checkbox]:checked').forEach(cb => {
+      if (seen.has(cb.value)) return;          // a size belongs to only one band
+      seen.add(cb.value);
+      out.push({sku: artno + '-' + cb.value, size: cb.value, price: wsp, compare_at: mrp});
+    });
+  });
+  out.sort((a, b) => SIZE_ORDER.indexOf(a.size) - SIZE_ORDER.indexOf(b.size));
+  return out;
+}
+
+async function saveProduct() {
+  const artno = editingArtno || _val('pf-artno');
+  if (!artno) { toast('Art number is required'); return; }
+
+  const variants = collectVariants(artno);
+  const first = variants[0] || {price:'', compare_at:''};
+  const payload = {
+    artno,
+    title:         _val('pf-title'),
+    product_type:  _val('pf-producttype'),
+    category:      _val('pf-category'),
+    season:        _val('pf-season'),
+    fabric:        _val('pf-fabric'),
+    fit_type:      _val('pf-fit'),
+    color_pattern: _val('pf-colorpat'),
+    color_count:   _val('pf-colorcount') || 0,
+    key_features:  _val('pf-keyfeat'),
+    tags:          _val('pf-tags'),
+    sort_order:    _val('pf-sort'),
+    visible:       document.getElementById('pf-visible').checked ? 1 : 0,
+    wsp:           first.price,
+    mrp:           first.compare_at,
+    variants,
+  };
+
+  const btn = document.getElementById('pm-save');
+  btn.disabled = true;
+  try {
+    const data = editingArtno
+      ? await api('POST', `/api/admin/products/${encodeURIComponent(editingArtno)}/update?session_id=${activeSessionId}`, payload)
+      : await api('POST', `/api/admin/products/create?session_id=${activeSessionId}`, payload);
+    if (data.success === false || data.error) {
+      toast('Error: ' + (data.error || 'Could not save product'));
+      return;
+    }
+    toast(editingArtno ? 'Product updated' : `Product ${artno} created`);
+    closeProductModal();   // navigates back to the products list
+  } catch (e) {
+    toast('Server error: ' + e.message);
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function deleteProduct() {
+  if (!editingArtno) return;
+  if (!confirm(`Delete product ${editingArtno} from this session? This removes it and its sizes from the active session only.`)) return;
+  const data = await api('POST', `/api/admin/products/${encodeURIComponent(editingArtno)}/delete?session_id=${activeSessionId}`);
+  if (data.success) {
+    toast(`Product ${editingArtno} deleted`);
+    closeProductModal();   // navigates back to the products list
+  } else {
+    toast('Error deleting product');
+  }
+}
+
+// ── COLLECTIONS ────────────────────────────────────────────────────────────
+// A collection groups products by a rule on one product field (e.g. Category = X).
+
+const COLLECTION_FIELDS = [
+  { k:'product_type',  label:'Product Type' },
+  { k:'category',      label:'Category' },
+  { k:'fabric',        label:'Fabric' },
+  { k:'fit_type',      label:'Fit Type' },
+  { k:'key_features',  label:'Lycra' },
+  { k:'color_pattern', label:'Colour' },
+  { k:'tags',          label:'Tags' },
+  { k:'title',         label:'Title' },
+  { k:'season',        label:'Season' },
+];
+let allCollections = [];
+let allGroups = [];              // collection groups (tabs)
+let activeGroupId = null;        // which group tab is selected on the Collections page
+let collectionProducts = [];     // products of the active session (for value suggestions)
+let editingCollectionId = null;
+let collListSel = new Set();      // selected collections on the list page (for quick actions)
+let condSeq = 0;                  // unique id source for condition-row datalists
+
+function currentGroupCollections() {
+  return allCollections.filter(c => c.group_id === activeGroupId);
+}
+function activeGroup() { return allGroups.find(g => g.id === activeGroupId) || null; }
+
+function collectionGroupTabsHtml() {
+  if (!allGroups.length) return '';
+  const tabs = allGroups.map(g => {
+    const n = allCollections.filter(c => c.group_id === g.id).length;
+    return `<button class="sess-tab ${g.id===activeGroupId?'active':''}" onclick="switchCollectionGroup(${g.id})">
+       ${esc(g.name)} <span class="sess-tab-count">${n}</span>
+     </button>`;
+  }).join('');
+  return `<div class="sess-tabs">${tabs}
+     <button class="sess-tab sess-tab-add" onclick="openGroupsSettings()" title="Create or reorder groups in Settings">&#9881; Manage Groups</button>
+   </div>`;
+}
+function switchCollectionGroup(id) { activeGroupId = id; collListSel.clear(); collPage = 0; renderCollections(); }
+function openGroupsSettings() {
+  currentPage = 'settings';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.page === 'settings'));
+  openSetting('collection-groups');
+}
+
+function fieldLabel(k) {
+  const f = COLLECTION_FIELDS.find(x => x.k === k);
+  return f ? f.label : k;
+}
+function ruleSummary(c) {
+  const conds = (c.conditions && c.conditions.length) ? c.conditions
+              : [{ field:c.rule_field, op:c.rule_op, value:c.rule_value }];
+  const join = (c.match_type === 'any') ? ' OR ' : ' AND ';
+  return conds.map(x => fieldLabel(x.field) + (x.op === 'contains' ? ' contains ' : ' is ') +
+    '“' + esc(x.value || '') + '”').join(join);
+}
+
+async function loadCollections() {
+  setContent('<div style="padding:40px;text-align:center;color:var(--gray)">Loading…</div>');
+  await loadSessionList();   // ensure activeSessionId
+  allGroups = await api('GET', '/api/admin/collection-groups') || [];
+  if (!Array.isArray(allGroups)) allGroups = [];
+  allCollections = await api('GET', '/api/admin/collections?session_id=' + activeSessionId) || [];
+  collectionProducts = await api('GET', '/api/admin/products?session_id=' + activeSessionId) || [];
+  if (!Array.isArray(allCollections)) allCollections = [];
+  if (!Array.isArray(collectionProducts)) collectionProducts = [];
+  if (!activeGroupId || !allGroups.some(g => g.id === activeGroupId)) {
+    activeGroupId = allGroups.length ? allGroups[0].id : null;
+  }
+  collListSel.clear();
+  collPage = 0;
+  renderCollections();
+}
+
+function renderCollections() {
+  document.getElementById('page-title').textContent = 'Collections';
+  const sess = activeSession();
+  const grp = activeGroup();
+  const groupColls = currentGroupCollections();
+  const allSel = groupColls.length > 0 && groupColls.every(c => collListSel.has(c.id));
+  const totalProducts = groupColls.reduce((s, c) => s + (parseInt(c.product_count) || 0), 0);
+  collPage = clampPage(collPage, groupColls.length);
+  const rows = pageSlice(groupColls, collPage).map(c => `
+    <tr class="row-click" onclick="openCollection(${c.id})" title="Open ${esc(c.name)} — view, edit & sort">
+      <td style="text-align:center" onclick="event.stopPropagation()"><input type="checkbox" ${collListSel.has(c.id)?'checked':''} onclick="event.stopPropagation()" onchange="toggleCollListSelect(${c.id},this.checked)"></td>
+      <td><strong>${esc(c.name)}</strong></td>
+      <td>${ruleSummary(c)}</td>
+      <td class="amt">${c.product_count}</td>
+      <td style="text-align:right;color:var(--gray)">&#8250;</td>
+    </tr>`).join('');
+  setContent(`
+    ${collectionGroupTabsHtml()}
+    <div class="card">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:16px;min-width:0">
+          <span class="session-pill" title="The collections and product counts shown are for this catalogue session.">
+            <span class="sp-label">Season</span>
+            <span class="sp-season">${sess?esc(sess.name):'—'}</span>
+          </span>
+          <div style="min-width:0">
+            <h3>${groupColls.length} Collection${groupColls.length===1?'':'s'}${grp?' in '+esc(grp.name):''} &middot; <span style="color:var(--green-dark)">${totalProducts}</span> product${totalProducts===1?'':'s'}</h3>
+            <div style="font-size:12px;color:var(--gray);margin-top:2px">Click a collection to open it. Tick rows for quick actions. Total is the sum of the Products column ${groupColls.length===1?'':'(products in several collections are counted in each)'}.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary btn-sm" onclick="openCollectionForm()">+ New Collection</button>
+          <div class="menu-wrap">
+            <button class="btn btn-secondary btn-sm icon-btn" onclick="toggleActionMenu(event)" title="Actions for selected collections" aria-label="Actions">&#9776;</button>
+            <div class="action-menu" id="action-menu" onclick="event.stopPropagation()">
+              <div class="action-menu-label">Selected (<span id="coll-list-count">0</span>)</div>
+              <button class="action-menu-item" onclick="downloadCollectionsPdf()"><span style="color:var(--green)">&#11015;</span> Download PDF</button>
+              <button class="action-menu-item" onclick="bulkDuplicateCollections()"><span style="color:var(--green)">&#10697;</span> Duplicate collection(s)</button>
+              <button class="action-menu-item" onclick="bulkDeleteCollections()"><span style="color:var(--red)">&#128465;</span> Delete collection(s)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th style="width:34px;text-align:center"><input type="checkbox" id="coll-list-all" ${allSel?'checked':''} onchange="toggleCollListSelectAll(this.checked)" title="Select all"></th>
+          <th>Name</th><th>Rule</th><th>Products</th><th></th>
+        </tr></thead>
+        <tbody>${rows || '<tr class="empty-row"><td colspan="5">No collections in this group yet — click <strong>+ New Collection</strong> to add one.</td></tr>'}</tbody>
+      </table>
+      <div>${pagerHtml(groupColls.length, collPage, 'collGoPage')}</div>
+    </div>
+  `);
+  updateCollListMenu();
+}
+function collGoPage(p) { collPage = clampPage(p, currentGroupCollections().length); renderCollections(); _scrollListTop(); }
+
+// ── collections list selection + quick actions ────────────────────────────
+function toggleCollListSelect(id, checked) {
+  if (checked) collListSel.add(id); else collListSel.delete(id);
+  updateCollListMenu();
+}
+function toggleCollListSelectAll(checked) {
+  collListSel.clear();
+  if (checked) currentGroupCollections().forEach(c => collListSel.add(c.id));
+  renderCollections();
+}
+function updateCollListMenu() {
+  const cnt = document.getElementById('coll-list-count');
+  if (cnt) cnt.textContent = collListSel.size;
+  const all = document.getElementById('coll-list-all');
+  const gc = currentGroupCollections();
+  if (all) all.checked = gc.length > 0 && gc.every(c => collListSel.has(c.id));
+}
+async function bulkDeleteCollections() {
+  closeActionMenu();
+  const ids = [...collListSel];
+  if (!ids.length) { toast('Select one or more collections first'); return; }
+  const names = ids.map(id => (allCollections.find(c => c.id === id) || {}).name).filter(Boolean);
+  if (!confirm('Delete ' + ids.length + ' collection(s)?\n\n' + names.join(', ') +
+               '\n\nThis removes the grouping only — the products themselves are not deleted.')) return;
+  try {
+    await Promise.all(ids.map(id => api('POST', `/api/admin/collections/${id}/delete`)));
+    toast(ids.length + ' collection(s) deleted');
+    loadCollections();
+  } catch (e) {
+    toast('Error: ' + e.message);
+  }
+}
+async function bulkDuplicateCollections() {
+  closeActionMenu();
+  const ids = [...collListSel];
+  if (!ids.length) { toast('Select one or more collections first'); return; }
+  // For a single selection let the user name the copy; for several, auto-name each "(copy)".
+  let chosenName = null;
+  if (ids.length === 1) {
+    const base = (allCollections.find(c => c.id === ids[0]) || {}).name || 'Collection';
+    let name = prompt('Name for the copy of “' + base + '”:', uniqueCollectionName(base));
+    if (name === null) return;                       // cancelled
+    name = name.trim();
+    if (!name) { toast('Collection name is required'); return; }
+    if (allCollections.some(c => (c.name||'').trim().toLowerCase() === name.toLowerCase())) {
+      toast('A collection named “' + name + '” already exists — pick a different name');
+      return;
+    }
+    chosenName = name;
+  }
+  try {
+    let ok = 0, fail = 0;
+    // Sequential so each server-derived "(copy N)" name sees the prior insert and stays unique.
+    for (const id of ids) {
+      const body = chosenName ? { name: chosenName } : {};
+      const data = await api('POST', `/api/admin/collections/${id}/duplicate`, body);
+      if (data && data.success !== false && !data.error) ok++; else fail++;
+    }
+    toast(ok + ' collection(s) duplicated' + (fail ? ' · ' + fail + ' failed' : ''));
+    collListSel.clear();
+    loadCollections();
+  } catch (e) {
+    toast('Error: ' + e.message);
+  }
+}
+async function downloadCollectionsPdf() {
+  closeActionMenu();
+  const ids = [...collListSel];
+  if (!ids.length) { toast('Select one or more collections first'); return; }
+  const area = document.getElementById('pdf-print-area');
+  if (!area) return;
+  toast('Preparing PDF…');
+  const seen = new Set();
+  let pages = '';
+  for (const id of ids) {
+    const prods = await api('GET', `/api/admin/collections/${id}/products?session_id=${activeSessionId}`) || [];
+    (Array.isArray(prods) ? prods : []).forEach(p => {
+      if (p.coll_active === false) return;      // draft-in-collection products never go to PDF
+      if (seen.has(p.artno)) return;           // de-dupe across selected collections
+      seen.add(p.artno);
+      pages += pdfPageHtml(p);
+    });
+  }
+  if (!pages) { toast('No products to export'); return; }
+  area.innerHTML = pages;
+  const imgs = [...area.querySelectorAll('img')];
+  const ready = Promise.all(imgs.map(img =>
+    (img.complete && img.naturalWidth) ? Promise.resolve()
+    : new Promise(r => { img.onload = img.onerror = r; })));
+  const prevTitle = document.title;
+  Promise.race([ready, new Promise(r => setTimeout(r, 45000))]).then(() => {
+    document.title = 'collections';
+    window.print();
+    setTimeout(() => { document.title = prevTitle; area.innerHTML = ''; }, 600);
+  });
+}
+
+// distinct, non-empty values of a product field across the active session (for suggestions)
+function fieldValues(field) {
+  const set = new Set();
+  collectionProducts.forEach(p => {
+    const v = (p[field] == null ? '' : String(p[field])).trim();
+    if (v) set.add(v);
+  });
+  return [...set].sort();
+}
+
+function fillCollectionValues() {
+  const field = document.getElementById('cf-field').value;
+  const dl = document.getElementById('dl-collection-values');
+  if (dl) dl.innerHTML = fieldValues(field).map(v => `<option value="${esc(v)}">`).join('');
+}
+
+// ── multi-condition rule editor (AND/OR over any product factor) ───────────
+function condRowHtml(cond, uid) {
+  cond = cond || { field: 'category', op: 'equals', value: '' };
+  const dlId = 'dl-cond-' + uid;
+  return `<div class="cond-row" data-uid="${uid}">
+    <select class="cond-field" onchange="onCondFieldChange(this)">
+      ${COLLECTION_FIELDS.map(f => `<option value="${f.k}" ${f.k===cond.field?'selected':''}>${f.label}</option>`).join('')}
+    </select>
+    <select class="cond-op">
+      <option value="equals" ${cond.op==='contains'?'':'selected'}>is exactly</option>
+      <option value="contains" ${cond.op==='contains'?'selected':''}>contains</option>
+    </select>
+    <input class="cond-value" list="${dlId}" value="${esc(cond.value||'')}" placeholder="value…">
+    <datalist id="${dlId}"></datalist>
+    <button type="button" class="cond-del" onclick="removeCond(this)" title="Remove condition">&#10005;</button>
+  </div>`;
+}
+function conditionsEditorHtml(conditions, matchType) {
+  conditions = (conditions && conditions.length) ? conditions : [{ field:'category', op:'equals', value:'' }];
+  condSeq = conditions.length;
+  const rows = conditions.map((c, i) => condRowHtml(c, i)).join('');
+  const any = matchType === 'any';
+  return `
+    <div class="form-row" style="align-items:center;gap:14px;margin-bottom:12px">
+      <div class="fg" style="flex:0 0 auto"><label>Include a product when it matches</label>
+        <select id="cf-match" onchange="var w=document.getElementById('cf-match-word');if(w)w.textContent=this.value==='any'?'any':'all'">
+          <option value="all" ${any?'':'selected'}>ALL conditions (AND)</option>
+          <option value="any" ${any?'selected':''}>ANY condition (OR)</option>
+        </select>
+      </div>
+      <div style="flex:1;font-size:12px;color:var(--gray)">Matches <strong id="cf-match-word">${any?'any':'all'}</strong> of the conditions below.</div>
+    </div>
+    <div id="cond-list">${rows}</div>
+    <button type="button" class="btn btn-secondary btn-sm" onclick="addCond()" style="margin-top:8px">+ Add condition</button>`;
+}
+function initCondDatalists() {
+  document.querySelectorAll('#cond-list .cond-row').forEach(r => onCondFieldChange(r.querySelector('.cond-field')));
+}
+function onCondFieldChange(sel) {
+  const row = sel && sel.closest('.cond-row');
+  const dl = row && row.querySelector('datalist');
+  if (dl) dl.innerHTML = fieldValues(sel.value).map(v => `<option value="${esc(v)}">`).join('');
+}
+function addCond() {
+  const list = document.getElementById('cond-list');
+  if (!list) return;
+  list.insertAdjacentHTML('beforeend', condRowHtml(null, condSeq++));
+  onCondFieldChange(list.lastElementChild.querySelector('.cond-field'));
+}
+function removeCond(btn) {
+  const list = document.getElementById('cond-list');
+  const row = btn.closest('.cond-row');
+  if (!list || !row) return;
+  if (list.children.length <= 1) { row.querySelector('.cond-value').value = ''; return; }
+  row.remove();
+}
+function collectConditions() {
+  return [...document.querySelectorAll('#cond-list .cond-row')].map(r => ({
+    field: r.querySelector('.cond-field').value,
+    op:    r.querySelector('.cond-op').value,
+    value: r.querySelector('.cond-value').value.trim(),
+  })).filter(c => c.value !== '');
+}
+
+function openCollectionForm(id) {
+  editingCollectionId = id || null;
+  const isEdit = !!id;
+  const c = isEdit ? (allCollections.find(x => x.id === id) || {}) : {};
+  const field = c.rule_field || 'category';
+  document.getElementById('page-title').textContent = isEdit ? 'Edit Collection' : 'New Collection';
+  setContent(`
+    <div class="form-page-head">
+      <button class="set-back" onclick="goto('collections')">&#8592; Collections</button>
+      <div style="flex:1"><h2 style="font-size:17px;font-weight:700">${isEdit?'Edit Collection':'New Collection'}</h2></div>
+      <button class="btn btn-secondary btn-sm" onclick="goto('collections')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveCollection()">${isEdit?'Save Changes':'Create Collection'}</button>
+    </div>
+    <div class="card">
+      <div class="modal-body">
+        <div class="section-title">Collection</div>
+        <div class="form-row">
+          <div class="fg"><label>Collection Name</label><input id="cf-name" value="${esc(c.name||'')}" placeholder="e.g. Basic Lowers"></div>
+          <div class="fg"><label>Group <span style="color:var(--red)">*</span></label><select id="cf-group">${
+            allGroups.map(g => `<option value="${g.id}"${(c.group_id||activeGroupId)===g.id?' selected':''}>${esc(g.name)}</option>`).join('')
+          }</select></div>
+        </div>
+        <div class="section-title" style="margin-top:18px">Rules — products that match are included automatically</div>
+        ${conditionsEditorHtml(c.conditions, c.match_type)}
+        <p style="font-size:12px;color:var(--gray);margin-top:10px">Pick a factor (Product Type, Category, Tags…), a match, and a value. Use <strong>+ Add condition</strong> to combine several with AND/OR.</p>
+      </div>
+    </div>
+  `);
+  initCondDatalists();
+}
+
+async function saveCollection() {
+  const name = (document.getElementById('cf-name').value || '').trim();
+  if (!name) { toast('Collection name is required'); return; }
+  const conditions = collectConditions();
+  if (!conditions.length) { toast('Add at least one condition with a value'); return; }
+  const groupEl = document.getElementById('cf-group');
+  const group_id = groupEl ? parseInt(groupEl.value) : activeGroupId;
+  if (!group_id) { toast('Please choose a group for this collection'); return; }
+  const payload = {
+    name,
+    conditions,
+    match_type: (document.getElementById('cf-match') || {}).value || 'all',
+    group_id,
+  };
+  const url = editingCollectionId
+    ? `/api/admin/collections/${editingCollectionId}/update`
+    : '/api/admin/collections/create';
+  const data = await api('POST', url, payload);
+  if (data.success === false || data.error) {
+    toast('Error: ' + (data.error || 'Could not save collection'));
+    return;
+  }
+  toast(editingCollectionId ? 'Collection updated' : 'Collection created');
+  goto('collections');
+}
+
+async function deleteCollection(id, name) {
+  if (!confirm('Delete collection “' + name + '”?\n\nThis only removes the collection grouping — the products themselves are not deleted.')) return;
+  const data = await api('POST', `/api/admin/collections/${id}/delete`);
+  if (data.success) { toast('Collection deleted'); loadCollections(); }
+  else toast('Error deleting collection');
+}
+
+// ── Collection detail: view + edit + sort + PDF, all on one page ───────────
+let detailCollection = null;   // collection being viewed
+let detailProducts = [];       // ordered product list shown (Art No order, manual drag applied on top)
+let dragSrcIndex = null;
+let collFilterArt = '';        // admin-only view filter: Art No (substring)
+let collFilterCat = '';        // admin-only view filter: Category (exact)
+let collArtOpen = false;       // Art No search field revealed inline in the header
+let collCatOpen = false;       // Category dropdown revealed inline in the header
+let collEditorOpen = true;     // Collection & Rules section expanded/collapsed
+let collSel = new Set();        // selected products on the detail page (for quick actions)
+
+async function openCollection(id) {
+  const c = allCollections.find(x => x.id === id) || {};
+  detailCollection = c;
+  saveView({page: 'collections', collectionId: id});   // refresh returns to this collection
+  document.getElementById('page-title').textContent = 'Collection';
+  setContent('<div style="padding:40px;text-align:center;color:var(--gray)">Loading…</div>');
+  const prods = await api('GET', `/api/admin/collections/${id}/products?session_id=${activeSessionId}`) || [];
+  detailProducts = Array.isArray(prods) ? prods : [];   // server returns them in Art No order (manual drag order applied on top)
+  collSel = new Set();
+  collFilterArt = ''; collFilterCat = '';   // start each collection with no view filter
+  collArtOpen = false; collCatOpen = false;
+  renderCollectionDetail();
+}
+
+function renderCollectionDetail() {
+  const c = detailCollection || {};
+  const field = c.rule_field || 'category';
+  const sess = activeSession();
+  setContent(`
+    <div class="form-page-head">
+      <button class="set-back" onclick="goto('collections')">&#8592; Collections</button>
+      <div style="flex:1;min-width:0">
+        <h2 style="font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.name||'Collection')}</h2>
+        <div style="font-size:12px;color:var(--gray)">${detailProducts.length} product${detailProducts.length===1?'':'s'}${sess?' · session '+esc(sess.name):''}</div>
+      </div>
+      <span class="sel-bar" id="coll-sel-actions">
+        <span><span id="coll-sel-count">0</span> selected</span>
+        <button class="btn btn-secondary btn-sm" onclick="downloadCollectionPdf(true)" title="Download PDF of the selected products">&#11015; PDF</button>
+        <button class="btn btn-danger btn-sm" onclick="bulkDeleteCollProducts()" title="Delete the selected products from this session">&#128465; Delete</button>
+        <button class="btn btn-secondary btn-sm" onclick="clearCollSel()" title="Clear selection">&#10005;</button>
+      </span>
+      <button class="btn btn-secondary btn-sm" onclick="downloadCollectionPdf()" title="Download all products as PDF — one per page">&#11015; Download PDF</button>
+      <button class="btn btn-secondary btn-sm" onclick="duplicateCurrentCollection()" title="Make a copy of this collection under a new name">&#10697; Duplicate</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteCurrentCollection()">Delete Collection</button>
+      <button class="btn btn-primary btn-sm" onclick="saveCollectionDetail()">Save</button>
+    </div>
+    <div class="card">
+      <div class="card-header" onclick="toggleCollEditor()" style="cursor:pointer">
+        <div><h3>Collection &amp; Rules</h3><div style="font-size:12px;color:var(--gray);margin-top:2px">Name, group &amp; the matching rules that build this collection.</div></div>
+        <button class="be-chev ${collEditorOpen?'open':''}" id="coll-editor-chev" title="${collEditorOpen?'Collapse':'Expand'}">&#9656;</button>
+      </div>
+      <div class="modal-body" id="coll-editor-body" style="${collEditorOpen?'':'display:none'}">
+        <div class="section-title">Collection</div>
+        <div class="form-row">
+          <div class="fg"><label>Collection Name</label><input id="cf-name" value="${esc(c.name||'')}" placeholder="e.g. Basic Lowers"></div>
+          <div class="fg"><label>Group <span style="color:var(--red)">*</span></label><select id="cf-group">${
+            allGroups.map(g => `<option value="${g.id}"${c.group_id===g.id?' selected':''}>${esc(g.name)}</option>`).join('')
+          }</select></div>
+        </div>
+        <div class="section-title" style="margin-top:16px">Rules — products matching are included automatically</div>
+        ${conditionsEditorHtml(c.conditions, c.match_type)}
+        <p style="font-size:12px;color:var(--gray);margin-top:10px">Combine factors with AND/OR. Changing rules updates membership — click <strong>Save</strong> to apply and refresh the list below.</p>
+      </div>
+    </div>
+    <div id="coll-products">${productsCardHtml()}</div>
+  `);
+  initCondDatalists();
+  updateCollSelectionUI();
+}
+
+function toggleCollEditor() {
+  collEditorOpen = !collEditorOpen;
+  const body = document.getElementById('coll-editor-body');
+  const chev = document.getElementById('coll-editor-chev');
+  if (body) body.style.display = collEditorOpen ? '' : 'none';
+  if (chev) { chev.classList.toggle('open', collEditorOpen); chev.title = collEditorOpen ? 'Collapse' : 'Expand'; }
+}
+
+function collFilterActive() {
+  return !!((collFilterArt || '').trim() || (collFilterCat || '').trim());
+}
+function filteredDetailProducts() {
+  const art = (collFilterArt || '').trim().toLowerCase();
+  const cat = (collFilterCat || '').trim().toLowerCase();
+  if (!art && !cat) return detailProducts;
+  return detailProducts.filter(p =>
+    (!art || (p.artno || '').toLowerCase().includes(art)) &&
+    (!cat || (p.category || '').trim().toLowerCase() === cat));
+}
+function collFilterCountText() {
+  return collFilterActive()
+    ? 'Showing ' + filteredDetailProducts().length + ' of ' + detailProducts.length
+    : '';
+}
+
+function productsCardHtml() {
+  const vis = filteredDetailProducts();
+  const allSel = vis.length > 0 && vis.every(p => collSel.has(p.artno));
+  const cats = [...new Set(detailProducts.map(p => (p.category || '').trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
+  const fActive = collFilterActive();
+  return `
+    <div class="card">
+      <div class="card-header">
+        <div><h3>Products</h3><div style="font-size:12px;color:var(--gray);margin-top:2px">Sorted by Art No. Drag the handle to set a custom order — used in the PDF export and listings. The Art No / Category filters in the header are an admin view only — they don't change the order, PDF or B2B catalogue.</div></div>
+        <div id="coll-filter-meta" style="display:${fActive?'flex':'none'};gap:10px;align-items:center;font-size:12px;color:var(--gray);flex-shrink:0">
+          <span id="coll-filter-count">${collFilterCountText()}</span>
+          <button class="btn btn-secondary btn-sm" onclick="clearCollFilter()">Clear filter</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--gray);padding:0 4px 10px">&#9776; Drag rows by the handle to reorder${fActive?' (clear the filter to reorder)':''}. Use <strong>Show</strong> to keep a product out of this collection's PDF &amp; the B2B catalogue (it stays here so you can switch it back on). Tick rows for quick actions.</div>
+      <table class="coll-table">
+        <thead><tr>
+          <th style="width:34px;text-align:center"><input type="checkbox" id="coll-select-all" ${allSel?'checked':''} onchange="toggleCollSelectAll(this.checked)" title="Select all (visible)"></th>
+          <th style="width:34px"></th>
+          <th style="width:44px">Image</th>
+          <th>
+            <span class="th-filter-inline">
+              <span class="th-cap">Art No</span>
+              <button class="th-ficon ${(collArtOpen||collFilterArt)?'active':''}" onclick="toggleArtSearch()" title="${collArtOpen?'Hide search':'Search Art No'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></button>
+              ${collArtOpen ? `<input id="coll-filter-art" class="th-inline-input" placeholder="Search Art No…" value="${esc(collFilterArt)}" oninput="onCollFilterArt(this.value)" autocomplete="off">` : ''}
+            </span>
+          </th>
+          <th>Title</th>
+          <th>
+            <span class="th-filter-inline">
+              <span class="th-cap">Category</span>
+              <button class="th-ficon ${(collCatOpen||collFilterCat)?'active':''}" onclick="toggleCatFilter()" title="${collCatOpen?'Hide filter':'Filter by category'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+              ${collCatOpen ? `<select id="coll-filter-cat" class="th-inline-select" onchange="onCollFilterCat(this.value)"><option value="">All categories</option>${cats.map(c => `<option value="${esc(c)}"${collFilterCat===c?' selected':''}>${esc(c)}</option>`).join('')}</select>` : ''}
+            </span>
+          </th>
+          <th>WSP</th>
+          <th>Status</th>
+          <th title="Active = shown in this collection's PDF and on the B2B catalogue">Show</th>
+        </tr></thead>
+        <tbody id="coll-prod-body">${collectionRowsHtml()}</tbody>
+      </table>
+    </div>`;
+}
+
+function onCollFilterArt(v) { collFilterArt = v; refreshCollRowsOnly(); }
+function onCollFilterCat(v) { collFilterCat = v; refreshCollRowsOnly(); }
+function clearCollFilter() {
+  collFilterArt = ''; collFilterCat = ''; collArtOpen = false; collCatOpen = false;
+  refreshCollProducts();
+}
+// Reveal/hide the Art No search field inline in the header (closing clears the search).
+function toggleArtSearch() {
+  collArtOpen = !collArtOpen;
+  if (!collArtOpen) collFilterArt = '';
+  refreshCollProducts();
+  if (collArtOpen) { const el = document.getElementById('coll-filter-art'); if (el) el.focus(); }
+}
+// Reveal/hide the Category dropdown inline in the header (closing clears the filter).
+function toggleCatFilter() {
+  collCatOpen = !collCatOpen;
+  if (!collCatOpen) collFilterCat = '';
+  refreshCollProducts();
+  if (collCatOpen) { const el = document.getElementById('coll-filter-cat'); if (el) el.focus(); }
+}
+// Re-render only the rows + count so the filter inputs keep focus while typing.
+function refreshCollRowsOnly() {
+  const body = document.getElementById('coll-prod-body');
+  if (body) body.innerHTML = collectionRowsHtml();
+  const meta = document.getElementById('coll-filter-meta');
+  if (meta) meta.style.display = collFilterActive() ? 'flex' : 'none';
+  const cnt = document.getElementById('coll-filter-count');
+  if (cnt) cnt.textContent = collFilterCountText();
+  updateCollSelectionUI();
+}
+
+function collectionRowsHtml() {
+  const list = filteredDetailProducts();
+  const fActive = collFilterActive();
+  if (!list.length) {
+    return `<tr class="empty-row"><td colspan="9">${fActive?'No products match the current filter.':'No products match this rule in the current session.'}</td></tr>`;
+  }
+  return list.map((p) => {
+    const i = detailProducts.indexOf(p);   // original index → drag stays in sync with the saved order
+    const collActive = p.coll_active !== false;
+    const drag = !fActive;                 // reordering disabled while a filter is applied
+    return `
+    <tr class="${drag?'drag-row':''}${collActive?'':' coll-draft'}" ${drag?`draggable="true" ondragstart="rowDragStart(event,${i})" ondragover="rowDragOver(event)" ondrop="rowDrop(event,${i})" ondragend="rowDragEnd(event)"`:''}>
+      <td style="text-align:center"><input type="checkbox" ${collSel.has(p.artno)?'checked':''} onmousedown="event.stopPropagation()" onclick="event.stopPropagation()" onchange="toggleCollSelect('${p.artno}',this.checked)"></td>
+      <td class="drag-handle" style="${drag?'':'opacity:.35'}" title="${drag?'Drag to reorder':'Clear the filter to reorder'}">&#9776;</td>
+      <td>${(p.thumb && /^(https?:\/\/|\/|data:)/.test(p.thumb)) ? '<img class="prod-thumb" src="'+esc(p.thumb)+'" loading="lazy" alt="">' : '<span class="prod-thumb-ph"></span>'}</td>
+      <td class="mono">${esc(p.artno)}</td>
+      <td style="max-width:280px">${esc(p.title)||'(untitled)'}</td>
+      <td>${esc(p.category)}</td>
+      <td class="amt">₹${esc(p.wsp||'')}</td>
+      <td>${p.visible ? '<span class="badge badge-green">Live</span>' : '<span class="badge badge-gray">Draft</span>'}</td>
+      <td class="coll-active-cell">
+        <label class="toggle" title="${collActive?'Active — shown in this collection PDF and on the B2B catalogue. Toggle off to set Draft.':'Draft — hidden from this collection PDF and the B2B catalogue. Toggle on to set Active.'}">
+          <input type="checkbox" ${collActive?'checked':''} onmousedown="event.stopPropagation()" onclick="event.stopPropagation()" onchange="toggleCollProductActive('${esc(p.artno)}')">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="ca-state ${collActive?'on':'off'}">${collActive?'Active':'Draft'}</span>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function refreshCollProducts() {
+  const el = document.getElementById('coll-products');
+  if (el) el.innerHTML = productsCardHtml();
+  updateCollSelectionUI();
+}
+
+// ── collection product selection (quick actions) ──────────────────────────
+function toggleCollSelect(artno, checked) {
+  if (checked) collSel.add(artno); else collSel.delete(artno);
+  updateCollSelectionUI();
+}
+function toggleCollSelectAll(checked) {
+  // Acts on the currently visible (filtered) rows; selections outside the filter are kept.
+  const vis = filteredDetailProducts();
+  if (checked) vis.forEach(p => collSel.add(p.artno));
+  else vis.forEach(p => collSel.delete(p.artno));
+  refreshCollRowsOnly();
+}
+function clearCollSel() {
+  collSel.clear();
+  refreshCollRowsOnly();
+}
+function updateCollSelectionUI() {
+  const n = collSel.size;
+  const box = document.getElementById('coll-sel-actions');
+  if (box) box.style.display = n ? 'inline-flex' : 'none';
+  const cnt = document.getElementById('coll-sel-count');
+  if (cnt) cnt.textContent = n;
+  const sa = document.getElementById('coll-select-all');
+  const vis = filteredDetailProducts();
+  if (sa) sa.checked = vis.length > 0 && vis.every(p => collSel.has(p.artno));
+}
+async function bulkDeleteCollProducts() {
+  const arts = [...collSel];
+  if (!arts.length) return;
+  const sname = (activeSession() || {}).name || 'this session';
+  if (!confirm('Delete ' + arts.length + ' product(s) from session “' + sname + '”?\n\n' +
+               'This removes the products and their sizes from this session. It cannot be undone.')) return;
+  try {
+    await Promise.all(arts.map(a =>
+      api('POST', '/api/admin/products/' + encodeURIComponent(a) + '/delete?session_id=' + activeSessionId)));
+    toast(arts.length + ' product(s) deleted');
+    collSel.clear();
+    openCollection(detailCollection.id);   // refresh membership
+  } catch (e) {
+    toast('Error: ' + e.message);
+  }
+}
+
+// Toggle a product's Active/Draft state within this collection (PDF + B2B catalogue).
+async function toggleCollProductActive(artno) {
+  const p = detailProducts.find(x => x.artno === artno);
+  if (!p) return;
+  const next = p.coll_active === false;   // currently draft → activate, else draft it
+  const data = await api('POST', `/api/admin/collections/${detailCollection.id}/product-active`,
+    { artno, active: next });
+  if (data && !data.error && typeof data.active === 'boolean') {
+    p.coll_active = data.active;
+    toast(p.coll_active ? 'Shown in collection' : 'Hidden from collection');
+  } else {
+    toast('Error: ' + ((data && data.error) || 'could not update — is the server running the latest code?'));
+  }
+  refreshCollProducts();   // always re-sync the switch + row to the stored state
+}
+
+function rowDragStart(e, i) { dragSrcIndex = i; e.dataTransfer.effectAllowed = 'move'; }
+function rowDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function rowDragEnd() { dragSrcIndex = null; }
+function rowDrop(e, i) {
+  e.preventDefault();
+  if (dragSrcIndex === null || dragSrcIndex === i) return;
+  const moved = detailProducts.splice(dragSrcIndex, 1)[0];
+  detailProducts.splice(i, 0, moved);
+  dragSrcIndex = null;
+  refreshCollProducts();
+}
+
+function deleteCurrentCollection() {
+  if (detailCollection) deleteCollection(detailCollection.id, detailCollection.name);
+}
+
+// Suggest a free "<base> (copy)" / "(copy N)" name not used by any existing collection.
+function uniqueCollectionName(base) {
+  const taken = n => allCollections.some(c => (c.name||'').trim().toLowerCase() === n.trim().toLowerCase());
+  let cand = base + ' (copy)';
+  if (!taken(cand)) return cand;
+  let i = 2;
+  while (taken(base + ' (copy ' + i + ')')) i++;
+  return base + ' (copy ' + i + ')';
+}
+
+async function duplicateCurrentCollection() {
+  if (!detailCollection) return;
+  const base = detailCollection.name || 'Collection';
+  let name = prompt('Name for the copy of “' + base + '”:', uniqueCollectionName(base));
+  if (name === null) return;                       // cancelled
+  name = name.trim();
+  if (!name) { toast('Collection name is required'); return; }
+  // Names must be unique — block a clash before sending (server enforces this too).
+  if (allCollections.some(c => (c.name||'').trim().toLowerCase() === name.toLowerCase())) {
+    toast('A collection named “' + name + '” already exists — pick a different name');
+    return;
+  }
+  const data = await api('POST', `/api/admin/collections/${detailCollection.id}/duplicate`, { name });
+  if (data.success === false || data.error) { toast('Error: ' + (data.error || 'Could not duplicate collection')); return; }
+  toast('Collection duplicated');
+  allCollections = await api('GET', '/api/admin/collections?session_id=' + activeSessionId) || [];
+  if (!Array.isArray(allCollections)) allCollections = [];
+  openCollection(data.id);                          // jump to the new copy
+}
+
+async function saveCollectionDetail() {
+  const name = (document.getElementById('cf-name').value || '').trim();
+  if (!name) { toast('Collection name is required'); return; }
+  const conditions = collectConditions();
+  if (!conditions.length) { toast('Add at least one condition with a value'); return; }
+  const groupEl = document.getElementById('cf-group');
+  const payload = {
+    name,
+    conditions,
+    match_type: (document.getElementById('cf-match') || {}).value || 'all',
+    sort_mode: 'manual',
+    order: detailProducts.map(p => p.artno),
+  };
+  if (groupEl && groupEl.value) payload.group_id = parseInt(groupEl.value);
+  const data = await api('POST', `/api/admin/collections/${detailCollection.id}/update`, payload);
+  if (data.success === false || data.error) { toast('Error: ' + (data.error || 'Could not save')); return; }
+  toast('Collection saved');
+  allCollections = await api('GET', '/api/admin/collections?session_id=' + activeSessionId) || [];
+  if (!Array.isArray(allCollections)) allCollections = [];
+  openCollection(detailCollection.id);   // refresh membership + order
+}
+
+// Build one print page (catalogue-style card) per product, then open the print dialog.
+function pdfPageHtml(p) {
+  const artno = (p.artno || p.handle || '').toUpperCase();
+  const hasShade = !!p.shade_card_image;
+  // Print-quality image: a high-res (~2200px) JPEG render via the ?hq=1 thumbnail — stays
+  // pixel-sharp when zoomed at the 9in page size, but a fraction of the original's file size
+  // so the PDF doesn't balloon. Falls back to the standard thumb.
+  const productImg = p.thumb ? p.thumb : '';
+  const shadeImg = p.shade_card_image || '';
+  const showShadeSplit = hasShade && !!productImg;   // product photo + "Shades Available" side by side
+  const tiers = []; let cur = null;
+  (p.variants || []).forEach(v => {
+    if (!cur || cur.price !== v.price) { cur = {sizes: [], price: v.price, mrp: v.compare_at || ''}; tiers.push(cur); }
+    cur.sizes.push(v.size);
+  });
+  const thCols = tiers.map(t => { const r = t.sizes.length>1 ? t.sizes[0]+'-'+t.sizes[t.sizes.length-1] : t.sizes[0]; return '<th>'+esc(r)+'</th>'; }).join('');
+  const hasMrp = tiers.some(t => t.mrp);
+  // W.S.P. and M.R.P. combined in one cell, slashed: "₹795 / ₹1350"
+  const priceCols = tiers.map(t => {
+    const w = '<span class="w">&#8377;'+esc(t.price)+'</span>';
+    const m = t.mrp ? ' <span class="m">/ &#8377;'+esc(t.mrp)+'</span>' : '';
+    return '<td>'+w+m+'</td>';
+  }).join('');
+  const table = tiers.length
+    ? '<table class="pdf-table"><thead><tr><th></th>'+thCols+'</tr></thead><tbody>'+
+        '<tr><td class="pl">'+(hasMrp?'W.S.P. / M.R.P.':'W.S.P.')+'</td>'+priceCols+'</tr>'+
+      '</tbody></table>'
+    : '';
+  const fabricFit = [p.fabric, p.fit_type].filter(Boolean).join(' - ');
+  const hasLycra = p.key_features && p.key_features.toUpperCase().indexOf('LYCRA') >= 0;
+  const colorCnt = parseInt(p.color_count) || 0;
+  const category = (p.product_type || p.category || '').toString().trim();
+  const row = (l, v) => '<div class="pdf-row"><span class="pdf-label">'+l+'</span>: '+v+'</div>';
+
+  // Image box: shade articles → 50/50 split (shade sets height, photo crops sides to match);
+  // otherwise the whole product photo, contained so the head is never cut.
+  const imageInner = showShadeSplit
+    ? '<div class="pdf-ss">'+
+        '<div class="pdf-ss-photo"><img src="'+esc(productImg)+'" alt="'+esc(p.title||'')+'"></div>'+
+        '<div class="pdf-ss-shade"><div class="pdf-ss-label">Shades Available</div>'+
+          '<img src="'+esc(shadeImg)+'" alt="Shade card"></div>'+
+      '</div>'
+    : ((productImg || shadeImg)
+        ? '<img class="pdf-photo" src="'+esc(productImg || shadeImg)+'" alt="'+esc(p.title||'')+'">'
+        : '');
+  const colorBar = colorCnt>0 ? '<div class="pdf-color-bar">'+colorCnt+' Colour'+(colorCnt>1?'s':'')+'</div>' : '';
+  const lycraBadge = hasLycra ? '<div class="pdf-lycra">&#8596; LYCRA</div>' : '';
+
+  return '<div class="pdf-page">'+
+    '<div class="pdf-header"><img src="/Logo.png" alt="CONFIDENCE" onerror="this.style.display=\'none\'"></div>'+
+    '<div class="pdf-bodywrap">'+
+      (category ? '<div class="pdf-cat">'+esc(category)+'</div>' : '')+
+      '<div class="pdf-image-box">'+imageInner+colorBar+lycraBadge+'</div>'+
+      '<div class="pdf-details">'+
+        '<div class="pdf-row"><span class="pdf-label">Art No</span>: <span class="pdf-artno">'+esc(artno)+'</span></div>'+
+        row('Description', esc(p.title||''))+
+        (fabricFit ? row('Fabric - Fit', esc(fabricFit)) : '')+
+        table+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+
+function downloadCollectionPdf(selectedOnly) {
+  const area = document.getElementById('pdf-print-area');
+  if (!area) return;
+  let list = detailProducts;
+  if (selectedOnly && collSel.size) list = detailProducts.filter(p => collSel.has(p.artno));
+  list = list.filter(p => p.coll_active !== false);   // draft-in-collection products never go to PDF
+  if (!list.length) { toast('No products to export'); return; }
+  area.innerHTML = list.map(pdfPageHtml).join('');
+  const imgs = [...area.querySelectorAll('img')];
+  const ready = Promise.all(imgs.map(img =>
+    (img.complete && img.naturalWidth) ? Promise.resolve()
+    : new Promise(r => { img.onload = img.onerror = r; })));
+  const prevTitle = document.title;
+  const fname = (((detailCollection && detailCollection.name) || 'collection')
+    .replace(/[^\w\- ]+/g, '').trim()) || 'collection';
+  Promise.race([ready, new Promise(r => setTimeout(r, 45000))]).then(() => {
+    document.title = fname;
+    window.print();
+    setTimeout(() => { document.title = prevTitle; area.innerHTML = ''; }, 600);
+  });
+}
+
+// ── ORDERS ───────────────────────────────────────────────────────────────
+
+async function loadOrders() {
+  setContent('<div style="padding:40px;text-align:center;color:var(--gray)">Loading…</div>');
+  allOrders = await api('GET', '/api/admin/orders');
+  orderPage = 0;
+  renderOrders(allOrders);
+}
+
+function renderOrders(list) {
+  currentOrderList = Array.isArray(list) ? list : [];
+  orderPage = clampPage(orderPage, currentOrderList.length);
+  const pageItems = pageSlice(currentOrderList, orderPage);
+  const filters = ['all','new','confirmed','processing','shipped','completed','cancelled'];
+  const filterBtns = filters.map(f =>
+    `<button class="filter-btn${orderFilter===f?' active':''}" onclick="setOrderFilter('${f}')">${f.charAt(0).toUpperCase()+f.slice(1)}</button>`
+  ).join('');
+  const rows = pageItems.map(o => `
+    <tr>
+      <td class="mono">${esc(o.order_id)}</td>
+      <td>${esc(o.received_at).slice(0,16).replace('T',' ')}</td>
+      <td><strong>${esc(o.party_name)}</strong><br><span style="color:var(--gray);font-size:12px">${esc(o.phone)}</span></td>
+      <td>${parseInt(o.total_pieces)||0} pcs</td>
+      <td class="amt">₹${parseFloat(o.total_amount).toLocaleString('en-IN')}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td><button class="btn btn-sm btn-secondary" onclick="openOrderModal('${esc(o.order_id)}')">View</button></td>
+    </tr>`).join('');
+  setContent(`
+    <div class="card">
+      <div class="card-header">
+        <h3>${list.length} Orders</h3>
+        <div class="filter-bar">${filterBtns}</div>
+      </div>
+      <table>
+        <thead><tr><th>Order ID</th><th>Date</th><th>Party</th><th>Qty</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+        <tbody>${rows||'<tr class="empty-row"><td colspan="7">No orders found</td></tr>'}</tbody>
+      </table>
+      <div>${pagerHtml(currentOrderList.length, orderPage, 'orderGoPage')}</div>
+    </div>
+  `);
+}
+function orderGoPage(p) { orderPage = clampPage(p, currentOrderList.length); renderOrders(currentOrderList); _scrollListTop(); }
+
+function setOrderFilter(f) {
+  orderFilter = f;
+  orderPage = 0;
+  const filtered = f === 'all' ? allOrders : allOrders.filter(o => o.status === f);
+  renderOrders(filtered);
+}
+
+async function openOrderModal(order_id) {
+  currentOrderId = order_id;
+  const data = await api('GET', `/api/admin/orders/${order_id}`);
+  document.getElementById('om-title').textContent = `Order ${order_id}`;
+  document.getElementById('om-status').value = data.status || 'new';
+  const items = (data.items||[]).map(i => `
+    <tr>
+      <td>${esc(i.product_title)}</td>
+      <td class="mono">${esc(i.sku)}</td>
+      <td>${esc(i.size)}</td>
+      <td>${esc(i.color) || '—'}</td>
+      <td style="text-align:center">${parseInt(i.qty)||0}</td>
+      <td>₹${parseFloat(i.price).toLocaleString('en-IN')}</td>
+      <td class="amt">₹${parseFloat(i.subtotal).toLocaleString('en-IN')}</td>
+    </tr>`).join('');
+  document.getElementById('om-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div><div class="section-title">Customer</div>
+        <p><strong>${esc(data.party_name)}</strong><br>
+        ${esc(data.contact_person)}<br>
+        ${esc(data.phone)}${data.email?' · '+esc(data.email):''}</p>
+      </div>
+      <div><div class="section-title">Shipping</div>
+        <p>${esc(data.address)}<br>${esc(data.city)}${data.state?' · '+esc(data.state):''}${data.pincode?' — '+esc(data.pincode):''}<br>
+        ${data.gst?'GST: '+esc(data.gst):''}${data.notes?'<br>Note: '+esc(data.notes):''}</p>
+      </div>
+    </div>
+    <div class="section-title">Items</div>
+    <table style="margin-bottom:12px">
+      <thead><tr><th>Product</th><th>SKU</th><th>Size</th><th>Colour</th><th style="text-align:center">Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody>${items||'<tr class="empty-row"><td colspan="7">No items</td></tr>'}</tbody>
+    </table>
+    <div style="text-align:right;font-size:14px;font-weight:700">
+      Total: ${parseInt(data.total_pieces)||0} pcs &nbsp;|&nbsp; ₹${parseFloat(data.total_amount).toLocaleString('en-IN')}
+    </div>
+  `;
+  document.getElementById('order-modal').classList.add('open');
+}
+
+function closeOrderModal() {
+  document.getElementById('order-modal').classList.remove('open');
+  currentOrderId = null;
+}
+
+async function saveOrderStatus() {
+  if (!currentOrderId) return;
+  const status = document.getElementById('om-status').value;
+  const data = await api('POST', `/api/admin/orders/${currentOrderId}/status`, {status});
+  if (data.success) {
+    toast('Status updated: ' + status);
+    const o = allOrders.find(x => x.order_id === currentOrderId);
+    if (o) o.status = status;
+    closeOrderModal();
+    renderOrders(orderFilter === 'all' ? allOrders : allOrders.filter(o => o.status === orderFilter));
+  } else {
+    toast('Error updating status');
+  }
+}
+
+// ── SETTINGS ─────────────────────────────────────────────────────────────
+
+// Settings is a category list (Shiprocket-style); each tile opens its own page.
+let settingsData = {};
+
+const SETTINGS_TILES = [
+  { key:'sessions', icon:'&#128450;', title:'Catalogue Sessions',     desc:'Create catalogue versions, switch which one is live, and work on each in its own Products tab.' },
+  { key:'collection-groups', icon:'&#128194;', title:'Collection Groups', desc:'Create the groups that organise collections into tabs, and set their display order.' },
+  { key:'store',    icon:'&#127978;', title:'Store Details',          desc:'Store name, catalogue title and season.' },
+  { key:'security', icon:'&#128274;', title:'Security',               desc:'Change the admin panel password.' },
+  { key:'presets',  icon:'&#9889;',   title:'Quick Quantity Presets', desc:'One-tap quantity fills for the order size picker.' },
+  { key:'shade',    icon:'&#127912;', title:'Shade Cards',            desc:'Auto-read shade card images with local OCR.' },
+];
+
+async function loadSettings() {
+  setContent('<div style="padding:40px;text-align:center;color:var(--gray)">Loading…</div>');
+  settingsData = await api('GET', '/api/admin/settings') || {};
+  renderSettingsList();
+}
+
+function renderSettingsList() {
+  document.getElementById('page-title').textContent = 'Settings';
+  const rows = SETTINGS_TILES.map(t =>
+    `<div class="set-tile" onclick="openSetting('${t.key}')">
+       <div class="set-tile-icon">${t.icon}</div>
+       <div class="set-tile-body">
+         <div class="set-tile-title">${t.title}</div>
+         <div class="set-tile-desc">${t.desc}</div>
+       </div>
+       <div class="set-tile-arrow">&#8250;</div>
+     </div>`).join('');
+  setContent(`<div class="set-list">${rows}</div>`);
+}
+
+function settingHeader(title) {
+  return `<div class="set-detail-hdr">
+            <button class="set-back" onclick="renderSettingsList()">&#8592; Settings</button>
+            <h3>${title}</h3>
+          </div>`;
+}
+
+function openSetting(key) {
+  const d = settingsData || {};
+  const tile = SETTINGS_TILES.find(t => t.key === key);
+  document.getElementById('page-title').textContent = tile ? tile.title : 'Settings';
+
+  if (key === 'store') {
+    setContent(`
+      <div class="card">
+        ${settingHeader('Store Details')}
+        <div class="modal-body">
+          <div class="form-row"><div class="fg"><label>Store Name</label><input id="s-name" value="${esc(d.store_name||'')}"></div></div>
+          <div class="form-row"><div class="fg"><label>Catalogue Title</label><input id="s-title" value="${esc(d.catalog_title||'')}"></div></div>
+          <div class="form-row"><div class="fg"><label>Season</label><input id="s-season" value="${esc(d.catalog_season||'')}"></div></div>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn btn-primary" onclick="saveStore()">Save Changes</button>
+          </div>
+        </div>
+      </div>`);
+  } else if (key === 'security') {
+    setContent(`
+      <div class="card">
+        ${settingHeader('Security')}
+        <div class="modal-body">
+          <div class="section-title">Change Admin Password</div>
+          <div class="form-row">
+            <div class="fg"><label>New Password</label><input type="password" id="s-pw" placeholder="Enter new password"></div>
+            <div class="fg"><label>Confirm Password</label><input type="password" id="s-pw2" placeholder="Repeat new password"></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn btn-primary" onclick="saveSecurity()">Update Password</button>
+          </div>
+        </div>
+      </div>`);
+  } else if (key === 'presets') {
+    setContent(`
+      <div class="card">
+        ${settingHeader('Quick Quantity Presets')}
+        <div class="modal-body">
+          <p style="font-size:13px;color:var(--gray);margin-bottom:14px">
+            One-tap quantity fills shown in the order size picker. <strong>Scope</strong> decides whether a preset fills
+            just one colour or every colour at once. <strong>Sizes</strong> use the format
+            <code>S:1, M:1, L:1, XL:1, 2XL:1, 3XL:1</code> (size : pieces).
+          </p>
+          <div id="presets-list"></div>
+          <button class="btn btn-secondary" onclick="addPreset()" style="margin-top:6px">+ Add Preset</button>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn btn-primary" onclick="savePresets()">Save Presets</button>
+          </div>
+        </div>
+      </div>`);
+    renderPresets(parsePresets(d.quick_qty_presets));
+  } else if (key === 'shade') {
+    setContent(`
+      <div class="card">
+        ${settingHeader('Shade Cards')}
+        <div class="modal-body">
+          <div class="section-title">Shade Card Colours</div>
+          <p style="font-size:13px;color:var(--gray);margin-bottom:12px">
+            Auto-read shade card images using local OCR to extract colour swatches — no API key needed.
+          </p>
+          <button class="btn btn-secondary" onclick="openShadeModal()">&#127912; Process Shade Cards</button>
+        </div>
+      </div>`);
+  } else if (key === 'sessions') {
+    setContent(`
+      <div class="card">
+        ${settingHeader('Catalogue Sessions')}
+        <div class="modal-body">
+          <p style="font-size:13px;color:var(--gray);margin-bottom:16px">
+            Each session is a separate version of the catalogue with its own products and prices.
+            The <strong>Live</strong> session is the one customers see on the B2B catalogue page.
+            Create a new session to prepare the next collection — the old one keeps running until you set the new one live.
+            Each session appears as a tab on the Products page.
+          </p>
+          <div class="section-title">New Session</div>
+          <div class="form-row">
+            <div class="fg"><label>Session Name</label><input id="new-sess-name" placeholder="e.g. S'26 Summer"></div>
+            <div class="fg"><label>Start from</label><select id="new-sess-copy"></select></div>
+          </div>
+          <button class="btn btn-primary" onclick="createSession()" style="margin-top:4px">+ Create Session</button>
+
+          <div class="section-title" style="margin-top:24px">All Sessions</div>
+          <div id="sessions-list"><p style="font-size:13px;color:var(--gray)">Loading…</p></div>
+        </div>
+      </div>`);
+    loadSessionsManager();
+  } else if (key === 'collection-groups') {
+    setContent(`
+      <div class="card">
+        ${settingHeader('Collection Groups')}
+        <div class="modal-body">
+          <p style="font-size:13px;color:var(--gray);margin-bottom:16px">
+            Groups organise collections into <strong>tabs</strong> on the Collections page.
+            Every collection belongs to exactly one group. Use the &#9650;&#9660; arrows to set the
+            order the tabs appear in.
+          </p>
+          <div class="section-title">New Group</div>
+          <div class="form-row">
+            <div class="fg"><label>Group Name</label><input id="new-grp-name" placeholder="e.g. F/S General" onkeydown="if(event.key==='Enter')createGroup()"></div>
+          </div>
+          <button class="btn btn-primary" onclick="createGroup()" style="margin-top:4px">+ Create Group</button>
+
+          <div class="section-title" style="margin-top:24px">All Groups</div>
+          <div id="groups-list"><p style="font-size:13px;color:var(--gray)">Loading…</p></div>
+        </div>
+      </div>`);
+    loadGroupsManager();
+  }
+}
+
+// ── COLLECTION GROUPS MANAGER (settings) ───────────────────────────────────
+
+async function loadGroupsManager() {
+  const resp = await api('GET', '/api/admin/collection-groups');
+  const el = document.getElementById('groups-list');
+  if (!el) return;
+  if (!Array.isArray(resp)) {
+    el.innerHTML = '<p style="font-size:13px;color:#e53e3e">Could not load groups (' +
+      esc((resp && resp.error) || 'unexpected response') + ').<br>If you just updated the app, ' +
+      'restart the server (stop it and run <code>python run.py</code> again), then reload.</p>';
+    return;
+  }
+  allGroups = resp;
+  el.innerHTML = resp.length ? resp.map((g, i) => `
+    <div class="grp-row">
+      <span class="grp-order">
+        <button class="btn btn-secondary btn-xs" ${i===0?'disabled':''} onclick="moveGroup(${i},-1)" title="Move up">&#9650;</button>
+        <button class="btn btn-secondary btn-xs" ${i===resp.length-1?'disabled':''} onclick="moveGroup(${i},1)" title="Move down">&#9660;</button>
+      </span>
+      <input class="grp-name" value="${esc(g.name)}" onchange="renameGroup(${g.id}, this.value)" title="Edit name, then click away to save">
+      <span class="grp-count">${g.collection_count} collection${g.collection_count===1?'':'s'}</span>
+      <button class="btn btn-danger btn-xs" onclick="deleteGroup(${g.id}, '${esc(g.name).replace(/'/g,"\\'")}')" title="Delete group">&#128465;</button>
+    </div>`).join('') : '<p style="font-size:13px;color:var(--gray)">No groups yet.</p>';
+}
+
+async function createGroup() {
+  const inp = document.getElementById('new-grp-name');
+  const name = (inp && inp.value || '').trim();
+  if (!name) { toast('Group name is required'); return; }
+  const data = await api('POST', '/api/admin/collection-groups/create', { name });
+  if (data.success === false || data.error) { toast('Error: ' + (data.error || 'Could not create group')); return; }
+  if (inp) inp.value = '';
+  toast('Group created');
+  loadGroupsManager();
+}
+
+async function renameGroup(id, name) {
+  name = (name || '').trim();
+  if (!name) { toast('Name cannot be empty'); loadGroupsManager(); return; }
+  const data = await api('POST', `/api/admin/collection-groups/${id}/rename`, { name });
+  if (data.success === false || data.error) toast('Error: ' + (data.error || 'Could not rename'));
+  else toast('Group renamed');
+  loadGroupsManager();
+}
+
+async function deleteGroup(id, name) {
+  if (!confirm('Delete group “' + name + '”?\n\nAny collections in it will move to another group (they are not deleted).')) return;
+  const data = await api('POST', `/api/admin/collection-groups/${id}/delete`);
+  if (data.success === false || data.error) { toast('Error: ' + (data.error || 'Could not delete group')); return; }
+  toast(data.moved ? ('Group deleted — ' + data.moved + ' collection(s) moved') : 'Group deleted');
+  loadGroupsManager();
+}
+
+async function moveGroup(index, dir) {
+  const ids = allGroups.map(g => g.id);
+  const j = index + dir;
+  if (j < 0 || j >= ids.length) return;
+  [ids[index], ids[j]] = [ids[j], ids[index]];
+  const data = await api('POST', '/api/admin/collection-groups/reorder', { order: ids });
+  if (data.success === false) toast('Could not reorder');
+  loadGroupsManager();
+}
+
+// ── SESSIONS MANAGER (settings) ────────────────────────────────────────────
+
+async function loadSessionsManager() {
+  const resp = await api('GET', '/api/admin/sessions');
+  const listEl0 = document.getElementById('sessions-list');
+  if (!Array.isArray(resp)) {
+    // stale/old server (no sessions route) or expired login
+    if (listEl0) listEl0.innerHTML = '<p style="font-size:13px;color:#e53e3e">' +
+      'Could not load sessions (' + esc((resp && resp.error) || 'unexpected response') + ').<br>' +
+      'If you just updated the app, restart the server (stop it and run <code>python run.py</code> again), then reload.</p>';
+    return;
+  }
+  sessionList = resp;
+  // "Start from" dropdown — blank session or copy an existing one
+  const copySel = document.getElementById('new-sess-copy');
+  if (copySel) {
+    copySel.innerHTML = '<option value="">Blank (no products)</option>' +
+      sessionList.map(s => `<option value="${s.id}">Copy: ${esc(s.name)} (${s.product_count})</option>`).join('');
+  }
+  const live = sessionList.find(s => s.is_live);
+  if (live && copySel) copySel.value = String(live.id);
+
+  const listEl = document.getElementById('sessions-list');
+  if (!listEl) return;
+  listEl.innerHTML = sessionList.map(s => `
+    <div class="sess-row ${s.is_live?'is-live':''}">
+      <div class="sess-row-main">
+        <div class="sess-row-name">
+          ${esc(s.name)}
+          ${s.is_live ? '<span class="badge badge-green">Live</span>' : '<span class="badge badge-gray">Draft</span>'}
+        </div>
+        <div class="sess-row-sub">${s.product_count} product${s.product_count===1?'':'s'}</div>
+      </div>
+      <div class="sess-row-actions">
+        ${s.is_live ? '' : `<button class="btn btn-sm btn-primary" onclick="goLiveSession(${s.id})">Set Live</button>`}
+        <button class="btn btn-sm btn-secondary" onclick="renameSession(${s.id}, '${esc(s.name).replace(/'/g,"\\'")}')">Rename</button>
+        ${s.is_live ? '' : `<button class="btn btn-sm btn-secondary" onclick="removeSession(${s.id}, '${esc(s.name).replace(/'/g,"\\'")}')">Delete</button>`}
+      </div>
+    </div>`).join('');
+}
+
+async function createSession() {
+  const name = (document.getElementById('new-sess-name').value || '').trim();
+  if (!name) { toast('Enter a session name'); return; }
+  const copyVal = document.getElementById('new-sess-copy').value;
+  const body = { name };
+  if (copyVal) body.copy_from = parseInt(copyVal, 10);
+  const data = await api('POST', '/api/admin/sessions/create', body);
+  if (data.success) {
+    toast('Session "' + name + '" created');
+    document.getElementById('new-sess-name').value = '';
+    activeSessionId = data.id;   // new session becomes the active Products tab
+    loadSessionsManager();
+  } else {
+    toast('Error: ' + (data.error || 'Could not create session'));
+  }
+}
+
+async function goLiveSession(id) {
+  const s = sessionList.find(x => x.id === id);
+  if (!confirm('Make "' + (s ? s.name : 'this session') + '" live on the B2B catalogue?\n\nThe currently live session will go offline.')) return;
+  const data = await api('POST', `/api/admin/sessions/${id}/live`);
+  if (data.success) { toast('Session is now live'); loadSessionsManager(); }
+  else toast('Error setting session live');
+}
+
+async function renameSession(id, current) {
+  const name = prompt('Rename session', current);
+  if (name === null) return;
+  const data = await api('POST', `/api/admin/sessions/${id}/rename`, { name });
+  if (data.success) { toast('Session renamed'); loadSessionsManager(); }
+  else toast('Error: ' + (data.error || 'Could not rename'));
+}
+
+async function removeSession(id, name) {
+  if (!confirm('Delete session "' + name + '"?\n\nThis permanently removes the session and all its products/prices. This cannot be undone.')) return;
+  const data = await api('POST', `/api/admin/sessions/${id}/delete`);
+  if (data.success) {
+    toast('Session deleted');
+    if (activeSessionId === id) activeSessionId = null;
+    loadSessionsManager();
+  } else {
+    toast('Cannot delete: ' + (data.error || 'unknown error'));
+  }
+}
+
+function parsePresets(raw) {
+  try { var a = JSON.parse(raw || '[]'); return Array.isArray(a) ? a : []; }
+  catch (e) { return []; }
+}
+function qtysToStr(q) {
+  return Object.keys(q || {}).map(function(k){ return k + ':' + q[k]; }).join(', ');
+}
+function strToQtys(s) {
+  var out = {};
+  (s || '').split(',').forEach(function(pair){
+    var m = pair.split(':');
+    if (m.length === 2) {
+      var size = m[0].trim().toUpperCase();
+      var qty  = parseInt(m[1].trim(), 10);
+      if (size && qty > 0) out[size] = qty;
+    }
+  });
+  return out;
+}
+function renderPresets(presets) {
+  var html = presets.map(function(p, i){
+    return '<div class="preset-row" style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">' +
+      '<div class="form-row">' +
+        '<div class="fg" style="flex:2"><label>Preset Name</label><input class="p-name" value="' + esc(p.name||'') + '"></div>' +
+        '<div class="fg" style="flex:1"><label>Scope</label><select class="p-scope">' +
+          '<option value="colour"' + (p.scope!=='all'?' selected':'') + '>This colour</option>' +
+          '<option value="all"' + (p.scope==='all'?' selected':'') + '>All colours</option>' +
+        '</select></div>' +
+      '</div>' +
+      '<div class="form-row"><div class="fg"><label>Sizes (size : pieces)</label>' +
+        '<input class="p-qtys" value="' + esc(qtysToStr(p.qtys)) + '" placeholder="S:1, M:1, L:1, XL:1"></div></div>' +
+      '<button class="btn btn-secondary" onclick="this.closest(\'.preset-row\').remove()" ' +
+        'style="font-size:12px;padding:5px 10px">Remove</button>' +
+    '</div>';
+  }).join('');
+  document.getElementById('presets-list').innerHTML = html ||
+    '<p style="font-size:13px;color:var(--gray);margin-bottom:10px">No presets yet — add one below.</p>';
+}
+function addPreset() {
+  var cur = collectPresets();
+  cur.push({ name: '', scope: 'colour', qtys: {} });
+  renderPresets(cur);
+}
+function collectPresets() {
+  var rows = document.querySelectorAll('#presets-list .preset-row');
+  var out = [];
+  rows.forEach(function(r){
+    var name  = r.querySelector('.p-name').value.trim();
+    var scope = r.querySelector('.p-scope').value;
+    var qtys  = strToQtys(r.querySelector('.p-qtys').value);
+    if (name && Object.keys(qtys).length) out.push({ name: name, scope: scope, qtys: qtys });
+  });
+  return out;
+}
+async function savePresets() {
+  var presets = collectPresets();
+  var json = JSON.stringify(presets);
+  var data = await api('POST', '/api/admin/settings', { quick_qty_presets: json });
+  if (data.success) settingsData.quick_qty_presets = json;
+  toast(data.success ? 'Presets saved!' : 'Error saving presets');
+}
+
+async function saveStore() {
+  const payload = {
+    store_name:     document.getElementById('s-name').value,
+    catalog_title:  document.getElementById('s-title').value,
+    catalog_season: document.getElementById('s-season').value,
+  };
+  const data = await api('POST', '/api/admin/settings', payload);
+  if (data.success) Object.assign(settingsData, payload);
+  toast(data.success ? 'Settings saved!' : 'Error saving settings');
+}
+
+async function saveSecurity() {
+  const pw  = document.getElementById('s-pw').value;
+  const pw2 = document.getElementById('s-pw2').value;
+  if (!pw) { toast('Enter a new password'); return; }
+  if (pw !== pw2) { toast('Passwords do not match'); return; }
+  const data = await api('POST', '/api/admin/settings', { new_password: pw });
+  if (data.success) {
+    document.getElementById('s-pw').value = '';
+    document.getElementById('s-pw2').value = '';
+  }
+  toast(data.success ? 'Password updated!' : 'Error updating password');
+}
+
+// ── SHADE CARD MODAL ──────────────────────────────────────────────────────
+
+function openShadeModal() {
+  document.getElementById('shade-log').textContent = 'Ready. Click Run to start.';
+  document.getElementById('shade-run-btn').disabled = false;
+  document.getElementById('shade-run-btn').textContent = '▶ Run';
+  document.getElementById('shade-modal').classList.add('open');
+}
+function closeShadeModal() {
+  document.getElementById('shade-modal').classList.remove('open');
+}
+async function runShadeCards() {
+  const btn   = document.getElementById('shade-run-btn');
+  const logEl = document.getElementById('shade-log');
+  const force = document.getElementById('shade-force').checked;
+  btn.disabled = true; btn.textContent = '⏳ Processing…';
+  logEl.textContent = 'Reading shade card images with local OCR…\n';
+  try {
+    const data = await api('POST', '/api/admin/process-shade-cards', {force});
+    logEl.textContent = data.output || '(no output)';
+    btn.textContent = data.success ? '✓ Done' : '✗ Error';
+    if (data.success) {
+      toast('Shade cards processed — colours updated.');
+    }
+  } catch(e) {
+    logEl.textContent = 'Server error: ' + e.message;
+    btn.textContent = '✗ Error';
+  }
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+
+function statusBadge(s) {
+  const map = {
+    new:'badge-blue', confirmed:'badge-teal', processing:'badge-orange',
+    shipped:'badge-purple', completed:'badge-green', cancelled:'badge-red'
+  };
+  return `<span class="badge ${map[s]||'badge-gray'}">${s}</span>`;
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+let _toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+
+if (TOKEN) {
+  checkAuth();
+} else {
+  document.getElementById('login-page').style.display = 'flex';
+}
+</script>
+
+<!-- demo badge (remove this single line to hide it) -->
+<div style="position:fixed;left:12px;bottom:12px;z-index:99999;background:rgba(0,76,63,.92);color:#fff;font:600 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;padding:5px 12px;border-radius:20px;box-shadow:0 2px 12px rgba(0,0,0,.22);pointer-events:none">● Interactive demo · sample data · runs offline</div>
+</body>
+</html>
